@@ -16,12 +16,12 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verifica se a senha está correta"""
-    # Workaround para problema do bcrypt
+    # Compatibilidade com hashes antigos (temporário)
     if hashed_password.startswith("SIMPLE_HASH:"):
         expected_password = hashed_password.replace("SIMPLE_HASH:", "")
         return plain_password == expected_password
     
-    # Tentar verificação normal (pode falhar devido ao problema do bcrypt)
+    # Verificação normal com bcrypt
     try:
         return pwd_context.verify(plain_password, hashed_password)
     except Exception as e:
@@ -29,9 +29,13 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
         return False
 
 def get_password_hash(password: str) -> str:
-    """Gera hash da senha"""
-    # Workaround para problema do bcrypt - usar hash simples temporário
-    return f"SIMPLE_HASH:{password}"
+    """Gera hash da senha usando bcrypt"""
+    try:
+        return pwd_context.hash(password)
+    except Exception as e:
+        print(f"⚠️ Erro ao gerar hash bcrypt: {e}")
+        # Fallback temporário apenas em caso de erro
+        return f"SIMPLE_HASH:{password}"
 
 def authenticate_user(db: Session, username: str, password: str) -> Optional[Usuario]:
     """Autentica o usuário"""

@@ -5,10 +5,10 @@
 .env.test
 
 # Banco de dados SQLite
-*.db
-*.sqlite
-*.sqlite3
-sgos.db
+# *.db
+# *.sqlite
+# *.sqlite3
+# sgos.db
 
 # Cache Python
 __pycache__/
