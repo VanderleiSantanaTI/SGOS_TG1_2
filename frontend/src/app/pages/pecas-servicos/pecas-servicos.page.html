@@ -1,0 +1,274 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/dashboard"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Peças e Serviços</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="container">
+    <!-- Loading -->
+    <div *ngIf="loading" class="loading-container">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Carregando...</p>
+    </div>
+
+    <!-- Conteúdo Principal -->
+    <div *ngIf="!loading" class="content">
+      <!-- Seleção de Ordem de Serviço -->
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon name="construct-outline"></ion-icon>
+            Selecionar Ordem de Serviço
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <div *ngIf="ordensAbertas.length === 0" class="no-data">
+            <ion-icon name="information-circle-outline"></ion-icon>
+            <p>Nenhuma ordem de serviço aberta encontrada.</p>
+          </div>
+
+          <div *ngIf="ordensAbertas.length > 0" class="ordens-grid">
+            <ion-card 
+              *ngFor="let ordem of ordensAbertas" 
+              class="ordem-card"
+              [class.selected]="ordemSelecionada?.id === ordem.id"
+              (click)="selecionarOrdem(ordem)">
+              <ion-card-content>
+                <div class="ordem-info">
+                  <h3>OS #{{ ordem.numero_os }}</h3>
+                  <p><strong>Veículo:</strong> {{ ordem.veiculo.placa }} - {{ ordem.veiculo.marca }} {{ ordem.veiculo.modelo }}</p>
+                  <p><strong>Data:</strong> {{ ordem.data_abertura | date:'dd/MM/yyyy' }}</p>
+                  <p><strong>Problema:</strong> {{ ordem.descricao_problema }}</p>
+                </div>
+              </ion-card-content>
+            </ion-card>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Detalhes da Ordem Selecionada -->
+      <div *ngIf="ordemSelecionada" class="ordem-details">
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>
+              <ion-icon name="car-outline"></ion-icon>
+              Ordem #{{ ordemSelecionada.numero_os }}
+            </ion-card-title>
+            <ion-card-subtitle>
+              {{ ordemSelecionada.veiculo.placa }} - {{ ordemSelecionada.veiculo.marca }} {{ ordemSelecionada.veiculo.modelo }}
+            </ion-card-subtitle>
+          </ion-card-header>
+        </ion-card>
+
+        <!-- Botões de Ação -->
+        <div class="action-buttons" *ngIf="hasPermission('MECANICO')">
+          <ion-button 
+            expand="block" 
+            color="primary" 
+            (click)="togglePecasForm()"
+            [class.active]="showPecasForm">
+            <ion-icon name="hardware-chip-outline" slot="start"></ion-icon>
+            {{ showPecasForm ? 'Cancelar Peça' : 'Adicionar Peça' }}
+          </ion-button>
+
+          <ion-button 
+            expand="block" 
+            color="secondary" 
+            (click)="toggleServicosForm()"
+            [class.active]="showServicosForm">
+            <ion-icon name="build-outline" slot="start"></ion-icon>
+            {{ showServicosForm ? 'Cancelar Serviço' : 'Adicionar Serviço' }}
+          </ion-button>
+        </div>
+
+        <!-- Formulário de Peças -->
+        <ion-card *ngIf="showPecasForm">
+          <ion-card-header>
+            <ion-card-title>Adicionar Peça</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <form [formGroup]="pecasForm" (ngSubmit)="adicionarPeca()">
+              <ion-item>
+                <ion-label position="stacked">Peça Utilizada *</ion-label>
+                <ion-input formControlName="peca_utilizada" placeholder="Ex: Filtro de óleo"></ion-input>
+              </ion-item>
+
+              <ion-item>
+                <ion-label position="stacked">Número da Ficha *</ion-label>
+                <ion-input formControlName="num_ficha" placeholder="Ex: FICHA-001"></ion-input>
+              </ion-item>
+
+              <ion-item>
+                <ion-label position="stacked">Quantidade *</ion-label>
+                <ion-input 
+                  type="text" 
+                  formControlName="qtd" 
+                  placeholder="Ex: 1 unidade">
+                </ion-input>
+              </ion-item>
+
+              <ion-button 
+                expand="block" 
+                type="submit" 
+                [disabled]="pecasForm.invalid">
+                <ion-icon name="add-outline" slot="start"></ion-icon>
+                Adicionar Peça
+              </ion-button>
+            </form>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- Formulário de Serviços -->
+        <ion-card *ngIf="showServicosForm">
+          <ion-card-header>
+            <ion-card-title>Adicionar Serviço</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <form [formGroup]="servicosForm" (ngSubmit)="adicionarServico()">
+              <ion-item>
+                <ion-label position="stacked">Serviço Realizado *</ion-label>
+                <ion-textarea 
+                  formControlName="servico_realizado" 
+                  placeholder="Ex: Troca de óleo e filtro"
+                  rows="3">
+                </ion-textarea>
+              </ion-item>
+
+              <ion-item>
+                <ion-label position="stacked">Tempo do Serviço *</ion-label>
+                <ion-input 
+                  type="text" 
+                  formControlName="tempo_de_servico_realizado" 
+                  placeholder="Ex: 2 horas">
+                </ion-input>
+              </ion-item>
+
+              <ion-button 
+                expand="block" 
+                type="submit" 
+                [disabled]="servicosForm.invalid">
+                <ion-icon name="add-outline" slot="start"></ion-icon>
+                Adicionar Serviço
+              </ion-button>
+            </form>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- Lista de Peças Utilizadas -->
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>
+              <ion-icon name="hardware-chip-outline"></ion-icon>
+              Peças Utilizadas
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <div *ngIf="pecasUtilizadas.length === 0" class="no-data">
+              <ion-icon name="information-circle-outline"></ion-icon>
+              <p>Nenhuma peça registrada.</p>
+            </div>
+
+                         <ion-list *ngIf="pecasUtilizadas.length > 0">
+               <ion-item *ngFor="let peca of pecasUtilizadas">
+                 <ion-label>
+                   <h3>{{ peca.peca_utilizada }}</h3>
+                   <p>Ficha: {{ peca.num_ficha }}</p>
+                   <p>Quantidade: {{ peca.qtd }}</p>
+                 </ion-label>
+                 <ion-button 
+                   *ngIf="hasPermission('MECANICO')"
+                   slot="end" 
+                   fill="clear" 
+                   color="danger"
+                   (click)="removerPeca(peca.id!)">
+                   <ion-icon name="trash-outline"></ion-icon>
+                 </ion-button>
+               </ion-item>
+             </ion-list>
+
+                         <div *ngIf="pecasUtilizadas.length > 0" class="total-section">
+               <ion-item>
+                 <ion-label><strong>Total Peças:</strong></ion-label>
+                 <ion-note slot="end">
+                   <strong>{{ calcularTotalPecas() }}</strong>
+                 </ion-note>
+               </ion-item>
+             </div>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- Lista de Serviços Realizados -->
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>
+              <ion-icon name="build-outline"></ion-icon>
+              Serviços Realizados
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <div *ngIf="servicosRealizados.length === 0" class="no-data">
+              <ion-icon name="information-circle-outline"></ion-icon>
+              <p>Nenhum serviço registrado.</p>
+            </div>
+
+                         <ion-list *ngIf="servicosRealizados.length > 0">
+               <ion-item *ngFor="let servico of servicosRealizados">
+                 <ion-label>
+                   <h3>{{ servico.servico_realizado }}</h3>
+                   <p>Tempo: {{ servico.tempo_de_servico_realizado }}</p>
+                 </ion-label>
+                 <ion-button 
+                   *ngIf="hasPermission('MECANICO')"
+                   slot="end" 
+                   fill="clear" 
+                   color="danger"
+                   (click)="removerServico(servico.id!)">
+                   <ion-icon name="trash-outline"></ion-icon>
+                 </ion-button>
+               </ion-item>
+             </ion-list>
+
+                         <div *ngIf="servicosRealizados.length > 0" class="total-section">
+               <ion-item>
+                 <ion-label><strong>Total Serviços:</strong></ion-label>
+                 <ion-note slot="end">
+                   <strong>{{ calcularTotalServicos() }}</strong>
+                 </ion-note>
+               </ion-item>
+             </div>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- Resumo Total -->
+        <ion-card *ngIf="pecasUtilizadas.length > 0 || servicosRealizados.length > 0" class="total-card">
+          <ion-card-header>
+            <ion-card-title>
+              <ion-icon name="calculator-outline"></ion-icon>
+              Resumo Total
+            </ion-card-title>
+          </ion-card-header>
+                     <ion-card-content>
+             <ion-item>
+               <ion-label>Total Peças:</ion-label>
+               <ion-note slot="end">{{ calcularTotalPecas() }}</ion-note>
+             </ion-item>
+             <ion-item>
+               <ion-label>Total Serviços:</ion-label>
+               <ion-note slot="end">{{ calcularTotalServicos() }}</ion-note>
+             </ion-item>
+             <ion-item class="total-geral">
+               <ion-label><strong>TOTAL GERAL:</strong></ion-label>
+               <ion-note slot="end">
+                 <strong>{{ calcularTotalGeral() }}</strong>
+               </ion-note>
+             </ion-item>
+           </ion-card-content>
+        </ion-card>
+      </div>
+    </div>
+  </div>
+</ion-content>

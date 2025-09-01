@@ -1,0 +1,246 @@
+.os-container {
+  padding: 16px;
+
+  @media (min-width: 768px) {
+    padding: 24px;
+    padding-top: 80px; // Space for desktop header
+  }
+}
+
+// Desktop Page Header
+.desktop-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--ion-color-light-shade);
+
+  h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0;
+    color: var(--ion-color-dark);
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 12px;
+
+    ion-button {
+      --border-radius: 8px;
+      height: 40px;
+    }
+  }
+}
+
+// Mobile Header
+.mobile-header {
+  text-align: center;
+  margin-bottom: 20px;
+
+  h2 {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0 0 4px 0;
+    color: var(--ion-color-primary);
+  }
+
+  p {
+    font-size: 14px;
+    color: var(--ion-color-medium);
+    margin: 0;
+  }
+}
+
+// Form Styles
+.form-row {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr;
+  margin-bottom: 16px;
+
+  @media (min-width: 768px) {
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+}
+
+.form-buttons {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+    justify-content: center;
+  }
+}
+
+// Filters
+.filters {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr;
+  margin-bottom: 20px;
+
+  @media (min-width: 768px) {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+// Stats Card
+.stats-card {
+  margin-bottom: 20px;
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+
+    @media (min-width: 768px) {
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .stat-item {
+      text-align: center;
+
+      .number {
+        display: block;
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--ion-color-dark);
+
+        &.warning { color: var(--ion-color-warning); }
+        &.success { color: var(--ion-color-success); }
+        &.primary { color: var(--ion-color-primary); }
+      }
+
+      .label {
+        display: block;
+        font-size: 12px;
+        color: var(--ion-color-medium);
+        text-transform: uppercase;
+        margin-top: 4px;
+      }
+    }
+  }
+}
+
+// OS Grid
+.os-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  ion-card {
+    margin: 0;
+    cursor: pointer;
+    transition: transform 0.2s;
+
+    &:hover {
+      transform: translateY(-2px);
+    }
+
+    .os-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+
+      .os-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        .add-services-btn {
+          --padding-start: 4px;
+          --padding-end: 4px;
+          height: 32px;
+          width: 32px;
+          margin: 0;
+        }
+      }
+    }
+
+    .os-info {
+      p {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 8px 0;
+        font-size: 13px;
+
+        ion-icon {
+          color: var(--ion-color-medium);
+          flex-shrink: 0;
+        }
+      }
+    }
+  }
+}
+
+// Empty State
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+
+  ion-icon {
+    font-size: 64px;
+    color: var(--ion-color-medium);
+    opacity: 0.5;
+    margin-bottom: 16px;
+  }
+
+  h3 {
+    color: var(--ion-color-dark);
+    margin-bottom: 8px;
+  }
+
+  p {
+    color: var(--ion-color-medium);
+    margin-bottom: 20px;
+  }
+}
+
+// Loading Cards
+.loading-cards {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  ion-card {
+    margin: 0;
+  }
+}
+
+// OS Details Alert
+.os-details-alert {
+  .alert-message {
+    text-align: left;
+    line-height: 1.8;
+    white-space: pre-line;
+    font-size: 14px;
+    
+    strong {
+      color: var(--ion-color-primary);
+      font-weight: 600;
+    }
+  }
+}

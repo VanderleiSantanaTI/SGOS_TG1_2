@@ -1,0 +1,105 @@
+<div class="stats-grid">
+  
+  <!-- Ordens de Serviço Stats -->
+  <ion-card class="stat-card">
+    <ion-card-content>
+      <div class="stat-header">
+        <ion-icon name="construct-outline" class="stat-icon primary"></ion-icon>
+        <h3>Ordens de Serviço</h3>
+      </div>
+      <div class="stat-content" *ngIf="!loading">
+        <div class="stat-main">
+          <span class="stat-number">{{stats.ordensServico.total}}</span>
+          <span class="stat-label">Total</span>
+        </div>
+        <div class="stat-breakdown">
+          <div class="stat-item">
+            <span class="stat-value warning">{{stats.ordensServico.abertas}}</span>
+            <span class="stat-name">Abertas</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value success">{{stats.ordensServico.fechadas}}</span>
+            <span class="stat-name">Fechadas</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value primary">{{stats.ordensServico.retiradas}}</span>
+            <span class="stat-name">Retiradas</span>
+          </div>
+        </div>
+      </div>
+      <div class="stat-loading" *ngIf="loading">
+        <ion-skeleton-text animated style="width: 60%; height: 32px;"></ion-skeleton-text>
+        <ion-skeleton-text animated style="width: 40%; height: 16px;"></ion-skeleton-text>
+      </div>
+      <ion-button fill="clear" size="small" (click)="navigateTo('/ordens-servico')">
+        Ver todas
+        <ion-icon name="chevron-forward" slot="end"></ion-icon>
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Veículos Stats -->
+  <ion-card class="stat-card" *ngIf="hasPermission('MECANICO')">
+    <ion-card-content>
+      <div class="stat-header">
+        <ion-icon name="car-outline" class="stat-icon secondary"></ion-icon>
+        <h3>Veículos</h3>
+      </div>
+      <div class="stat-content" *ngIf="!loading">
+        <div class="stat-main">
+          <span class="stat-number">{{stats.veiculos.total}}</span>
+          <span class="stat-label">Total</span>
+        </div>
+        <div class="stat-breakdown">
+          <div class="stat-item">
+            <span class="stat-value success">{{stats.veiculos.ativos}}</span>
+            <span class="stat-name">Ativos</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value warning">{{stats.veiculos.manutencao}}</span>
+            <span class="stat-name">Manutenção</span>
+          </div>
+        </div>
+      </div>
+      <div class="stat-loading" *ngIf="loading">
+        <ion-skeleton-text animated style="width: 60%; height: 32px;"></ion-skeleton-text>
+        <ion-skeleton-text animated style="width: 40%; height: 16px;"></ion-skeleton-text>
+      </div>
+      <ion-button fill="clear" size="small" (click)="navigateTo('/veiculos')">
+        Ver todos
+        <ion-icon name="chevron-forward" slot="end"></ion-icon>
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Usuários Stats -->
+  <ion-card class="stat-card" *ngIf="hasPermission('SUPERVISOR')">
+    <ion-card-content>
+      <div class="stat-header">
+        <ion-icon name="people-outline" class="stat-icon tertiary"></ion-icon>
+        <h3>Usuários</h3>
+      </div>
+      <div class="stat-content" *ngIf="!loading">
+        <div class="stat-main">
+          <span class="stat-number">{{stats.usuarios.total}}</span>
+          <span class="stat-label">Total</span>
+        </div>
+        <div class="stat-breakdown">
+          <div class="stat-item">
+            <span class="stat-value success">{{stats.usuarios.ativos}}</span>
+            <span class="stat-name">Ativos</span>
+          </div>
+        </div>
+      </div>
+      <div class="stat-loading" *ngIf="loading">
+        <ion-skeleton-text animated style="width: 60%; height: 32px;"></ion-skeleton-text>
+        <ion-skeleton-text animated style="width: 40%; height: 16px;"></ion-skeleton-text>
+      </div>
+      <ion-button fill="clear" size="small" (click)="navigateTo('/usuarios')">
+        Gerenciar
+        <ion-icon name="chevron-forward" slot="end"></ion-icon>
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
+
+</div>

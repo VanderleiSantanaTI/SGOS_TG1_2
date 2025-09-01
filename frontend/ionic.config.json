@@ -1,0 +1,13 @@
+{
+  "name": "sgos-frontend",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular",
+  "proxies": [
+    {
+      "path": "/api/*",
+      "proxyUrl": "http://localhost:8000/api/*"
+    }
+  ]
+}

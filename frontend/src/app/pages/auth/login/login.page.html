@@ -1,0 +1,150 @@
+<ion-content [fullscreen]="true" class="login-content">
+  <div class="login-container responsive-container">
+    
+    <!-- Logo and Title Section -->
+    <div class="login-header">
+      <div class="logo-container">
+        <ion-icon name="construct" class="logo-icon"></ion-icon>
+      </div>
+      <h1>SGOS</h1>
+      <p class="subtitle">Sistema de Gerenciamento de Ordem de Serviço</p>
+    </div>
+
+    <!-- Login Form -->
+    <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="login-form responsive-form">
+      <ion-card class="form-card responsive-card">
+        <ion-card-content>
+          
+          <!-- Username Field -->
+          <div class="form-group">
+            <ion-item 
+              [class.item-has-error]="hasError('username')"
+              fill="outline"
+              class="custom-item">
+              <ion-icon name="person-outline" slot="start"></ion-icon>
+              <ion-label position="stacked">Usuário</ion-label>
+              <ion-input 
+                formControlName="username"
+                type="text"
+                placeholder="Digite seu usuário"
+                autocomplete="username"
+                [clearInput]="true">
+              </ion-input>
+            </ion-item>
+            <div class="error-message" *ngIf="hasError('username')">
+              {{ getErrorMessage('username') }}
+            </div>
+          </div>
+
+          <!-- Password Field -->
+          <div class="form-group">
+            <ion-item 
+              [class.item-has-error]="hasError('password')"
+              fill="outline"
+              class="custom-item">
+              <ion-icon name="lock-closed-outline" slot="start"></ion-icon>
+              <ion-label position="stacked">Senha</ion-label>
+              <ion-input 
+                formControlName="password"
+                [type]="showPassword ? 'text' : 'password'"
+                placeholder="Digite sua senha"
+                autocomplete="current-password">
+              </ion-input>
+              <ion-button 
+                fill="clear" 
+                slot="end" 
+                (click)="togglePasswordVisibility()"
+                class="password-toggle">
+                <ion-icon 
+                  [name]="showPassword ? 'eye-off-outline' : 'eye-outline'"
+                  slot="icon-only">
+                </ion-icon>
+              </ion-button>
+            </ion-item>
+            <div class="error-message" *ngIf="hasError('password')">
+              {{ getErrorMessage('password') }}
+            </div>
+          </div>
+
+          <!-- Login Button -->
+          <div class="form-group">
+            <ion-button 
+              type="submit"
+              expand="block"
+              [disabled]="loadingState.loading"
+              class="login-button">
+              <ion-spinner *ngIf="loadingState.loading" name="crescent" slot="start"></ion-spinner>
+              {{ loadingState.loading ? 'Entrando...' : 'Entrar' }}
+            </ion-button>
+          </div>
+
+          <!-- Forgot Password Link -->
+          <div class="form-group text-center">
+            <ion-button 
+              fill="clear" 
+              size="small"
+              (click)="goToForgotPassword()"
+              class="forgot-password-button">
+              Esqueci minha senha
+            </ion-button>
+          </div>
+
+        </ion-card-content>
+      </ion-card>
+    </form>
+
+    <!-- Quick Login Demo Section -->
+    <div class="demo-section" *ngIf="!loadingState.loading">
+      <ion-card class="demo-card responsive-card">
+        <ion-card-header>
+          <ion-card-title class="demo-title">
+            <ion-icon name="flash-outline"></ion-icon>
+            Login Rápido (Demo)
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <div class="demo-buttons">
+            <ion-button 
+              fill="outline" 
+              size="small"
+              (click)="quickLogin('admin')"
+              class="demo-button">
+              <ion-icon name="shield-outline" slot="start"></ion-icon>
+              Admin
+            </ion-button>
+            <ion-button 
+              fill="outline" 
+              size="small"
+              (click)="quickLogin('supervisor')"
+              class="demo-button">
+              <ion-icon name="people-outline" slot="start"></ion-icon>
+              Supervisor
+            </ion-button>
+            <ion-button 
+              fill="outline" 
+              size="small"
+              (click)="quickLogin('mecanico')"
+              class="demo-button">
+              <ion-icon name="construct-outline" slot="start"></ion-icon>
+              Mecânico
+            </ion-button>
+            <ion-button 
+              fill="outline" 
+              size="small"
+              (click)="quickLogin('usuario')"
+              class="demo-button">
+              <ion-icon name="person-outline" slot="start"></ion-icon>
+              Usuário
+            </ion-button>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <!-- Footer -->
+    <div class="login-footer">
+      <p>&copy; 2024 SGOS. Todos os direitos reservados.</p>
+    </div>
+
+  </div>
+</ion-content>

@@ -1,0 +1,212 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Veículos</ion-title>
+    <ion-buttons slot="end">
+      <ion-button 
+        fill="clear" 
+        (click)="createVeiculo()" 
+        *ngIf="isAdmin()">
+        <ion-icon name="add" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button fill="clear" (click)="loadVeiculos()">
+        <ion-icon name="refresh-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <!-- Pull to refresh -->
+  <ion-refresher slot="fixed" (ionRefresh)="onRefresh($event)">
+    <ion-refresher-content
+      pullingIcon="chevron-down-circle-outline"
+      pullingText="Puxe para atualizar"
+      refreshingSpinner="circles"
+      refreshingText="Atualizando...">
+    </ion-refresher-content>
+  </ion-refresher>
+
+  <div class="veiculos-container responsive-container">
+    
+    <!-- Header Section -->
+    <div class="header-section">
+      <h1>Gestão de Veículos</h1>
+      <p>Controle completo da frota de veículos</p>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="filters-section">
+      <div class="filters-grid">
+        <!-- Search -->
+        <ion-searchbar
+          [(ngModel)]="searchTerm"
+          (ionInput)="onSearchChange($event)"
+          placeholder="Buscar por marca, modelo, placa ou patrimônio"
+          show-clear-button="focus"
+          class="custom-searchbar">
+        </ion-searchbar>
+        
+        <!-- Status Filter -->
+        <ion-select
+          [(ngModel)]="selectedStatus"
+          (ionChange)="onStatusChange($event)"
+          placeholder="Filtrar por status"
+          interface="popover"
+          class="status-filter">
+          <ion-select-option 
+            *ngFor="let option of statusOptions" 
+            [value]="option.value">
+            {{option.label}}
+          </ion-select-option>
+        </ion-select>
+      </div>
+    </div>
+
+    <!-- Stats Summary -->
+    <div class="stats-summary" *ngIf="!loading">
+      <ion-card class="summary-card responsive-card">
+        <ion-card-content>
+          <div class="summary-grid">
+            <div class="summary-item">
+              <span class="summary-number">{{veiculos.length}}</span>
+              <span class="summary-label">Total</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-number success">{{getVeiculosByStatus('ATIVO').length}}</span>
+              <span class="summary-label">Ativos</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-number warning">{{getVeiculosByStatus('MANUTENCAO').length}}</span>
+              <span class="summary-label">Manutenção</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-number danger">{{getVeiculosByStatus('INATIVO').length}}</span>
+              <span class="summary-label">Inativos</span>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <!-- Vehicles List -->
+    <div class="vehicles-section">
+      <!-- Loading State -->
+      <div class="loading-state" *ngIf="loading">
+        <ion-card *ngFor="let item of [1,2,3,4,5]" class="vehicle-card responsive-card">
+          <ion-card-content>
+            <ion-skeleton-text animated style="width: 60%; height: 20px; margin-bottom: 8px;"></ion-skeleton-text>
+            <ion-skeleton-text animated style="width: 40%; height: 16px; margin-bottom: 8px;"></ion-skeleton-text>
+            <ion-skeleton-text animated style="width: 80%; height: 14px; margin-bottom: 8px;"></ion-skeleton-text>
+            <ion-skeleton-text animated style="width: 50%; height: 14px;"></ion-skeleton-text>
+          </ion-card-content>
+        </ion-card>
+      </div>
+
+      <!-- Vehicles Grid -->
+      <div class="vehicles-grid responsive-grid" *ngIf="!loading">
+        <ion-card 
+          *ngFor="let veiculo of filteredVeiculos; trackBy: trackByVeiculoId"
+          class="vehicle-card responsive-card"
+          [class.clickable]="canEdit()">
+          
+          <ion-card-header>
+            <div class="vehicle-header">
+              <div class="vehicle-info">
+                <ion-card-title>{{veiculo.marca}} {{veiculo.modelo}}</ion-card-title>
+                <ion-card-subtitle>{{veiculo.placa}} | {{veiculo.patrimonio}}</ion-card-subtitle>
+              </div>
+              <ion-badge [color]="getStatusColor(veiculo.status)" class="status-badge">
+                {{getStatusDisplayName(veiculo.status)}}
+              </ion-badge>
+            </div>
+          </ion-card-header>
+
+          <ion-card-content>
+            <div class="vehicle-details">
+              <div class="detail-row">
+                <ion-icon name="business-outline"></ion-icon>
+                <span>{{veiculo.su_cia_viatura}}</span>
+              </div>
+              <div class="detail-row" *ngIf="veiculo.ano_fabricacao">
+                <ion-icon name="calendar-outline"></ion-icon>
+                <span>{{veiculo.ano_fabricacao}}</span>
+              </div>
+              <div class="detail-row" *ngIf="veiculo.cor">
+                <ion-icon name="color-palette-outline"></ion-icon>
+                <span>{{veiculo.cor}}</span>
+              </div>
+              <div class="detail-row">
+                <ion-icon name="time-outline"></ion-icon>
+                <span>{{formatDate(veiculo.created_at)}}</span>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons" *ngIf="canEdit()">
+              <ion-button 
+                fill="clear" 
+                size="small"
+                (click)="editVeiculo(veiculo)"
+                class="edit-button">
+                <ion-icon name="create-outline" slot="start"></ion-icon>
+                Editar
+              </ion-button>
+              <ion-button 
+                fill="clear" 
+                size="small"
+                color="danger"
+                (click)="deleteVeiculo(veiculo)"
+                *ngIf="isAdmin()"
+                class="delete-button">
+                <ion-icon name="trash-outline" slot="start"></ion-icon>
+                Excluir
+              </ion-button>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state" *ngIf="!loading && filteredVeiculos.length === 0">
+        <ion-icon name="car-outline" class="empty-icon"></ion-icon>
+        <h3>{{searchTerm || selectedStatus ? 'Nenhum veículo encontrado' : 'Nenhum veículo cadastrado'}}</h3>
+        <p *ngIf="searchTerm || selectedStatus">
+          Tente ajustar os filtros de busca.
+        </p>
+        <p *ngIf="!searchTerm && !selectedStatus">
+          {{isAdmin() ? 'Comece cadastrando o primeiro veículo.' : 'Aguarde o administrador cadastrar veículos.'}}
+        </p>
+        <ion-button 
+          fill="outline" 
+          (click)="createVeiculo()" 
+          *ngIf="isAdmin() && !searchTerm && !selectedStatus">
+          <ion-icon name="add" slot="start"></ion-icon>
+          Cadastrar Primeiro Veículo
+        </ion-button>
+        <ion-button 
+          fill="outline" 
+          (click)="clearFilters()" 
+          *ngIf="searchTerm || selectedStatus">
+          <ion-icon name="refresh" slot="start"></ion-icon>
+          Limpar Filtros
+        </ion-button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Floating Action Button (Mobile) -->
+  <ion-fab 
+    vertical="bottom" 
+    horizontal="end" 
+    slot="fixed" 
+    *ngIf="isAdmin() && !loading">
+    <ion-fab-button color="primary" (click)="createVeiculo()">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
+</ion-content>

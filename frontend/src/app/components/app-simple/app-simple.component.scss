@@ -1,0 +1,104 @@
+// User info section in side menu
+.user-info {
+  padding: 20px 16px;
+  background: linear-gradient(135deg, var(--ion-color-primary), var(--ion-color-primary-shade));
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .user-avatar {
+    .avatar-circle {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 18px;
+      color: white;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+  }
+
+  .user-details {
+    flex: 1;
+    min-width: 0; // For text truncation
+
+    h3 {
+      margin: 0 0 4px 0;
+      font-size: 16px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    p {
+      margin: 0 0 2px 0;
+      font-size: 14px;
+      opacity: 0.9;
+      font-weight: 500;
+    }
+
+    small {
+      font-size: 12px;
+      opacity: 0.7;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: block;
+    }
+  }
+}
+
+// Active menu item styling
+.active-menu-item {
+  --background: var(--ion-color-primary-tint);
+  --color: var(--ion-color-primary);
+  font-weight: 500;
+
+  ion-icon {
+    color: var(--ion-color-primary);
+  }
+}
+
+// Menu list styling
+ion-list {
+  padding: 0;
+
+  ion-item {
+    --padding-start: 16px;
+    --inner-padding-end: 16px;
+    --min-height: 48px;
+
+    ion-icon {
+      margin-right: 12px;
+      font-size: 20px;
+    }
+
+    ion-label {
+      font-weight: 400;
+    }
+
+    &:hover {
+      --background: var(--ion-color-light-shade);
+    }
+  }
+
+  ion-item-divider {
+    --background: var(--ion-color-light);
+    --color: var(--ion-color-medium);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 8px;
+
+    ion-label {
+      margin: 8px 0;
+    }
+  }
+}

@@ -1,0 +1,178 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Dashboard</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="logout()">
+        <ion-icon name="log-out-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="dashboard-content">
+  <div class="dashboard-container responsive-container">
+    
+    <!-- Welcome Section -->
+    <div class="welcome-section">
+      <h1>{{getGreetingMessage()}}, {{getUserFirstName()}}!</h1>
+      <p>Bem-vindo ao painel de controle do SGOS</p>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-section">
+      <div class="stats-grid responsive-grid">
+        
+        <!-- Ordens de Serviço Stats -->
+        <ion-card class="stat-card responsive-card">
+          <ion-card-content>
+            <div class="stat-header">
+              <ion-icon name="construct-outline" class="stat-icon primary"></ion-icon>
+              <h3>Ordens de Serviço</h3>
+            </div>
+            <div class="stat-content">
+              <div class="stat-main">
+                <span class="stat-number">{{ osStats.total }}</span>
+                <span class="stat-label">Total</span>
+              </div>
+              <div class="stat-breakdown">
+                <div class="stat-item">
+                  <span class="stat-value warning">{{ osStats.abertas }}</span>
+                  <span class="stat-name">Abertas</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-value success">{{ osStats.fechadas }}</span>
+                  <span class="stat-name">Fechadas</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-value primary">{{ osStats.retiradas }}</span>
+                  <span class="stat-name">Retiradas</span>
+                </div>
+              </div>
+            </div>
+            <ion-button 
+              fill="clear" 
+              size="small" 
+              class="stat-action"
+              (click)="navigateTo('/ordens-servico')">
+              Ver todas
+              <ion-icon name="chevron-forward" slot="end"></ion-icon>
+            </ion-button>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- Veículos Stats -->
+        <ion-card class="stat-card responsive-card">
+          <ion-card-content>
+            <div class="stat-header">
+              <ion-icon name="car-outline" class="stat-icon secondary"></ion-icon>
+              <h3>Veículos</h3>
+            </div>
+            <div class="stat-content">
+              <div class="stat-main">
+                <span class="stat-number">{{ veiculoStats.total }}</span>
+                <span class="stat-label">Total</span>
+              </div>
+              <div class="stat-breakdown">
+                <div class="stat-item">
+                  <span class="stat-value success">{{ veiculoStats.ativos }}</span>
+                  <span class="stat-name">Ativos</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-value warning">{{ veiculoStats.manutencao }}</span>
+                  <span class="stat-name">Manutenção</span>
+                </div>
+              </div>
+            </div>
+            <ion-button 
+              fill="clear" 
+              size="small" 
+              class="stat-action"
+              (click)="navigateTo('/veiculos')">
+              Ver todos
+              <ion-icon name="chevron-forward" slot="end"></ion-icon>
+            </ion-button>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- Usuários Stats -->
+        <ion-card class="stat-card responsive-card">
+          <ion-card-content>
+            <div class="stat-header">
+              <ion-icon name="people-outline" class="stat-icon tertiary"></ion-icon>
+              <h3>Usuários</h3>
+            </div>
+            <div class="stat-content">
+              <div class="stat-main">
+                <span class="stat-number">{{ usuarioStats.total }}</span>
+                <span class="stat-label">Total</span>
+              </div>
+              <div class="stat-breakdown">
+                <div class="stat-item">
+                  <span class="stat-value success">{{ usuarioStats.ativos }}</span>
+                  <span class="stat-name">Ativos</span>
+                </div>
+              </div>
+            </div>
+            <ion-button 
+              fill="clear" 
+              size="small" 
+              class="stat-action"
+              (click)="navigateTo('/usuarios')">
+              Gerenciar
+              <ion-icon name="chevron-forward" slot="end"></ion-icon>
+            </ion-button>
+          </ion-card-content>
+        </ion-card>
+
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions-section">
+      <h2>Ações Rápidas</h2>
+      <div class="actions-grid">
+        <ion-button 
+          expand="block" 
+          fill="outline" 
+          class="action-button"
+          (click)="navigateTo('/ordens-servico')">
+          <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+          Nova OS
+        </ion-button>
+        <ion-button 
+          expand="block" 
+          fill="outline" 
+          class="action-button"
+          (click)="navigateTo('/veiculos')">
+          <ion-icon name="car-outline" slot="start"></ion-icon>
+          Veículos
+        </ion-button>
+        <ion-button 
+          expand="block" 
+          fill="outline" 
+          class="action-button"
+          (click)="navigateTo('/relatorios')">
+          <ion-icon name="bar-chart-outline" slot="start"></ion-icon>
+          Relatórios
+        </ion-button>
+      </div>
+    </div>
+
+    <!-- User Info -->
+    <div class="user-info-section" *ngIf="currentUser">
+      <ion-card class="responsive-card">
+        <ion-card-content>
+          <h3>Informações do Usuário</h3>
+          <p><strong>Nome:</strong> {{currentUser.nome_completo}}</p>
+          <p><strong>Email:</strong> {{currentUser.email}}</p>
+          <p><strong>Perfil:</strong> {{currentUser.perfil}}</p>
+          <p><strong>Status:</strong> {{currentUser.ativo ? 'Ativo' : 'Inativo'}}</p>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+  </div>
+</ion-content>

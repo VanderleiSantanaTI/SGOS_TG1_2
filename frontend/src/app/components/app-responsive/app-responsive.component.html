@@ -1,0 +1,147 @@
+<ion-app>
+  <!-- DESKTOP/TABLET HEADER (>= 768px) -->
+  <ion-header *ngIf="!isMobile && isAuthenticated" class="desktop-header">
+    <ion-toolbar color="primary">
+      <!-- Logo/Brand -->
+      <div slot="start" class="brand-section">
+        <ion-icon name="construct" class="brand-icon"></ion-icon>
+        <span class="brand-text">SGOS</span>
+      </div>
+
+      <!-- Desktop Navigation -->
+      <div class="desktop-nav">
+        <ion-button 
+          *ngFor="let item of getFilteredMenuItems()"
+          fill="clear"
+          [class.active-nav-item]="isCurrentRoute(item.url)"
+          (click)="navigateTo(item.url)"
+          class="nav-button">
+          <ion-icon [name]="item.icon" slot="start"></ion-icon>
+          {{item.title}}
+        </ion-button>
+      </div>
+
+      <!-- User Menu -->
+      <div slot="end" class="user-section">
+        <ion-button fill="clear" class="user-button" id="user-menu-trigger">
+          <div class="user-avatar">
+            {{getUserInitials()}}
+          </div>
+          <div class="user-info">
+            <span class="user-name">{{getUserFirstName()}}</span>
+            <small class="user-role">{{getUserRoleDisplayName()}}</small>
+          </div>
+          <ion-icon name="chevron-down-outline" class="dropdown-icon"></ion-icon>
+        </ion-button>
+
+        <!-- User Dropdown Menu -->
+        <ion-popover trigger="user-menu-trigger" placement="bottom-end">
+          <ng-template>
+            <ion-content class="user-popover">
+              <ion-list>
+                <ion-item button (click)="navigateTo('/perfil')">
+                  <ion-icon name="person-outline" slot="start"></ion-icon>
+                  <ion-label>Meu Perfil</ion-label>
+                </ion-item>
+                <ion-item button (click)="navigateTo('/configuracoes')" *ngIf="hasPermission({title: '', url: '', icon: '', requiredRole: 'ADMIN'})">
+                  <ion-icon name="settings-outline" slot="start"></ion-icon>
+                  <ion-label>Configurações</ion-label>
+                </ion-item>
+                <ion-item-divider></ion-item-divider>
+                <ion-item button (click)="logout()" class="logout-item">
+                  <ion-icon name="log-out-outline" slot="start"></ion-icon>
+                  <ion-label>Sair</ion-label>
+                </ion-item>
+              </ion-list>
+            </ion-content>
+          </ng-template>
+        </ion-popover>
+      </div>
+    </ion-toolbar>
+  </ion-header>
+
+  <!-- MOBILE SIDE MENU (< 768px) -->
+  <ion-menu 
+    contentId="main-content" 
+    type="overlay" 
+    [disabled]="!isAuthenticated || !isMobile"
+    class="mobile-menu">
+    
+    <ion-header>
+      <ion-toolbar color="primary">
+        <ion-title>SGOS</ion-title>
+      </ion-toolbar>
+    </ion-header>
+    
+    <ion-content>
+      <!-- User Info -->
+      <div class="mobile-user-info" *ngIf="currentUser">
+        <div class="user-avatar-mobile">
+          {{getUserInitials()}}
+        </div>
+        <div class="user-details-mobile">
+          <h3>{{currentUser.nome_completo}}</h3>
+          <p>{{getUserRoleDisplayName()}}</p>
+          <small>{{currentUser.email}}</small>
+        </div>
+      </div>
+
+      <ion-list>
+        <!-- Main Menu Items -->
+        <ion-item 
+          *ngFor="let item of getFilteredMenuItems()" 
+          button 
+          (click)="navigateTo(item.url)"
+          [class.active-menu-item]="isCurrentRoute(item.url)">
+          <ion-icon [name]="item.icon" slot="start"></ion-icon>
+          <ion-label>{{item.title}}</ion-label>
+        </ion-item>
+
+        <ion-item-divider>
+          <ion-label>Conta</ion-label>
+        </ion-item-divider>
+
+        <!-- User Menu Items -->
+        <ion-item 
+          *ngFor="let item of userMenuItems" 
+          button 
+          (click)="navigateTo(item.url)"
+          [class.active-menu-item]="isCurrentRoute(item.url)">
+          <ion-icon [name]="item.icon" slot="start"></ion-icon>
+          <ion-label>{{item.title}}</ion-label>
+        </ion-item>
+
+        <!-- Logout -->
+        <ion-item button (click)="logout()">
+          <ion-icon name="log-out-outline" slot="start"></ion-icon>
+          <ion-label>Sair</ion-label>
+        </ion-item>
+      </ion-list>
+    </ion-content>
+  </ion-menu>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-layout" [class.desktop-layout]="isDesktop" [class.mobile-layout]="isMobile">
+    
+    <!-- Mobile Header (< 768px) -->
+    <ion-header *ngIf="isMobile && isAuthenticated" class="mobile-header">
+      <ion-toolbar color="primary">
+        <ion-buttons slot="start">
+          <ion-menu-button></ion-menu-button>
+        </ion-buttons>
+        <ion-title class="mobile-title">
+          <ion-icon name="construct" class="mobile-brand-icon"></ion-icon>
+          SGOS
+        </ion-title>
+        <ion-buttons slot="end">
+          <ion-button fill="clear" (click)="logout()">
+            <ion-icon name="log-out-outline" slot="icon-only"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+    <!-- Router Outlet -->
+    <ion-router-outlet id="main-content" [class.with-desktop-header]="!isMobile && isAuthenticated"></ion-router-outlet>
+  </div>
+</ion-app>

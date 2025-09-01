@@ -1,0 +1,454 @@
+// DESKTOP HEADER STYLES
+.desktop-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  ion-toolbar {
+    --background: var(--ion-color-primary);
+    --color: white;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+
+    // Brand Section
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-right: 40px;
+      cursor: pointer;
+
+      .brand-icon {
+        font-size: 28px;
+        color: white;
+      }
+
+      .brand-text {
+        font-size: 24px;
+        font-weight: 700;
+        color: white;
+        letter-spacing: 1px;
+      }
+    }
+
+    // Desktop Navigation
+    .desktop-nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+
+      .nav-button {
+        --color: rgba(255, 255, 255, 0.8);
+        --background: transparent;
+        --border-radius: 8px;
+        height: 40px;
+        font-weight: 500;
+        font-size: 14px;
+        transition: all 0.2s ease;
+        margin: 0 4px;
+
+        &:hover {
+          --background: rgba(255, 255, 255, 0.1);
+          --color: white;
+        }
+
+        &.active-nav-item {
+          --background: rgba(255, 255, 255, 0.15);
+          --color: white;
+          font-weight: 600;
+          
+          ion-icon {
+            color: white;
+          }
+        }
+
+        ion-icon {
+          font-size: 18px;
+          margin-right: 6px;
+        }
+      }
+    }
+
+    // User Section
+    .user-section {
+      .user-button {
+        --color: white;
+        --background: transparent;
+        --border-radius: 8px;
+        height: 48px;
+        padding: 0 12px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        transition: all 0.2s ease;
+
+        &:hover {
+          --background: rgba(255, 255, 255, 0.1);
+        }
+
+        .user-avatar {
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.2);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 600;
+          font-size: 14px;
+          color: white;
+          border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .user-info {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          min-width: 0;
+
+          .user-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: white;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 120px;
+          }
+
+          .user-role {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 1px;
+          }
+        }
+
+        .dropdown-icon {
+          font-size: 16px;
+          color: rgba(255, 255, 255, 0.8);
+          margin-left: 4px;
+        }
+      }
+    }
+  }
+}
+
+// USER POPOVER STYLES
+.user-popover {
+  --background: var(--ion-color-light);
+  min-width: 200px;
+
+  ion-list {
+    background: transparent;
+
+    ion-item {
+      --background: transparent;
+      --color: var(--ion-color-dark);
+      --border-radius: 4px;
+      margin: 2px 8px;
+
+      &:hover {
+        --background: var(--ion-color-light-shade);
+      }
+
+      &.logout-item {
+        --color: var(--ion-color-danger);
+        
+        ion-icon {
+          color: var(--ion-color-danger);
+        }
+      }
+
+      ion-icon {
+        color: var(--ion-color-medium);
+        font-size: 18px;
+      }
+
+      ion-label {
+        font-weight: 500;
+      }
+    }
+
+    ion-item-divider {
+      --background: var(--ion-color-light-shade);
+      margin: 8px;
+      min-height: 1px;
+    }
+  }
+}
+
+// MOBILE HEADER STYLES
+.mobile-header {
+  .mobile-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+
+    .mobile-brand-icon {
+      font-size: 20px;
+    }
+  }
+}
+
+// MOBILE MENU STYLES
+.mobile-menu {
+  --width: 280px;
+
+  .mobile-user-info {
+    padding: 20px 16px;
+    background: linear-gradient(135deg, var(--ion-color-primary), var(--ion-color-primary-shade));
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .user-avatar-mobile {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 18px;
+      color: white;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .user-details-mobile {
+      flex: 1;
+      min-width: 0;
+
+      h3 {
+        margin: 0 0 4px 0;
+        font-size: 16px;
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      p {
+        margin: 0 0 2px 0;
+        font-size: 14px;
+        opacity: 0.9;
+        font-weight: 500;
+      }
+
+      small {
+        font-size: 12px;
+        opacity: 0.7;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: block;
+      }
+    }
+  }
+
+  ion-list {
+    padding: 0;
+
+    ion-item {
+      --padding-start: 16px;
+      --inner-padding-end: 16px;
+      --min-height: 48px;
+
+      &.active-menu-item {
+        --background: var(--ion-color-primary-tint);
+        --color: var(--ion-color-primary);
+        font-weight: 500;
+
+        ion-icon {
+          color: var(--ion-color-primary);
+        }
+      }
+
+      ion-icon {
+        margin-right: 12px;
+        font-size: 20px;
+        color: var(--ion-color-medium);
+      }
+
+      ion-label {
+        font-weight: 400;
+      }
+
+      &:hover {
+        --background: var(--ion-color-light-shade);
+      }
+    }
+
+    ion-item-divider {
+      --background: var(--ion-color-light);
+      --color: var(--ion-color-medium);
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 8px;
+
+      ion-label {
+        margin: 8px 0;
+      }
+    }
+  }
+}
+
+// MAIN LAYOUT
+.main-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+
+  &.desktop-layout {
+    padding-top: 64px; // Space for fixed header
+  }
+
+  &.mobile-layout {
+    padding-top: 0;
+  }
+
+  .with-desktop-header {
+    margin-top: 0;
+  }
+}
+
+// RESPONSIVE BREAKPOINTS
+@media (min-width: 768px) and (max-width: 1023px) {
+  // Tablet specific styles
+  .desktop-header ion-toolbar {
+    padding: 0 20px;
+
+    .brand-section {
+      margin-right: 24px;
+
+      .brand-text {
+        font-size: 20px;
+      }
+    }
+
+    .desktop-nav .nav-button {
+      font-size: 13px;
+      height: 36px;
+      margin: 0 2px;
+
+      ion-icon {
+        font-size: 16px;
+      }
+    }
+
+    .user-section .user-button {
+      height: 44px;
+      padding: 0 8px;
+
+      .user-avatar {
+        width: 32px;
+        height: 32px;
+        font-size: 12px;
+      }
+
+      .user-info .user-name {
+        font-size: 13px;
+        max-width: 100px;
+      }
+    }
+  }
+}
+
+@media (min-width: 1024px) {
+  // Desktop specific styles
+  .desktop-header ion-toolbar {
+    height: 72px;
+    padding: 0 32px;
+
+    .brand-section {
+      margin-right: 48px;
+
+      .brand-icon {
+        font-size: 32px;
+      }
+
+      .brand-text {
+        font-size: 26px;
+      }
+    }
+
+    .desktop-nav .nav-button {
+      font-size: 15px;
+      height: 44px;
+      margin: 0 6px;
+      padding: 0 16px;
+
+      ion-icon {
+        font-size: 20px;
+        margin-right: 8px;
+      }
+    }
+
+    .user-section .user-button {
+      height: 52px;
+      padding: 0 16px;
+
+      .user-avatar {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+      }
+
+      .user-info {
+        .user-name {
+          font-size: 15px;
+          max-width: 140px;
+        }
+
+        .user-role {
+          font-size: 12px;
+        }
+      }
+    }
+  }
+}
+
+// DARK THEME SUPPORT
+@media (prefers-color-scheme: dark) {
+  .desktop-header {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  .user-popover {
+    --background: var(--ion-color-step-100);
+
+    ion-list ion-item {
+      &:hover {
+        --background: var(--ion-color-step-150);
+      }
+    }
+  }
+
+  .mobile-menu .mobile-user-info {
+    background: linear-gradient(135deg, var(--ion-color-primary), var(--ion-color-primary-shade));
+  }
+}
+
+// HIDE MOBILE MENU ON DESKTOP
+@media (min-width: 768px) {
+  .mobile-menu {
+    display: none !important;
+  }
+}
+
+// HIDE DESKTOP HEADER ON MOBILE
+@media (max-width: 767px) {
+  .desktop-header {
+    display: none !important;
+  }
+}

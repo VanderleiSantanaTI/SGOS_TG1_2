@@ -1,0 +1,241 @@
+<!-- Mobile Header (só para mobile) -->
+<ion-header [translucent]="true" class="mobile-only">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>{{showCreateForm ? 'Nova OS' : 'Ordens de Serviço'}}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="showCreateForm ? hideCreateOS() : showCreateOS()">
+        <ion-icon [name]="showCreateForm ? 'close' : 'add'" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="os-container">
+    
+    <!-- Desktop Page Header -->
+    <div class="desktop-page-header desktop-only" *ngIf="!showCreateForm">
+      <h1>Ordens de Serviço</h1>
+      <div class="header-actions">
+        <ion-button fill="outline" (click)="loadOrdensServico()">
+          <ion-icon name="refresh-outline" slot="start"></ion-icon>
+          Atualizar
+        </ion-button>
+        <ion-button color="primary" (click)="showCreateOS()">
+          <ion-icon name="add" slot="start"></ion-icon>
+          Nova OS
+        </ion-button>
+      </div>
+    </div>
+
+    <!-- Desktop Create Header -->
+    <div class="desktop-page-header desktop-only" *ngIf="showCreateForm">
+      <h1>Nova Ordem de Serviço</h1>
+      <div class="header-actions">
+        <ion-button fill="outline" (click)="hideCreateOS()">
+          <ion-icon name="close-outline" slot="start"></ion-icon>
+          Cancelar
+        </ion-button>
+      </div>
+    </div>
+    
+    <!-- CREATE FORM -->
+    <div *ngIf="showCreateForm">
+      <div class="mobile-header mobile-only">
+        <h2>Nova Ordem de Serviço</h2>
+        <p>Preencha os dados</p>
+      </div>
+
+      <ion-card>
+        <ion-card-content>
+          <!-- Data e Veículo -->
+          <div class="form-row">
+            <ion-item fill="outline">
+              <ion-label position="stacked">Data *</ion-label>
+              <ion-input [(ngModel)]="createFormData.data" type="date"></ion-input>
+            </ion-item>
+            <ion-item fill="outline">
+              <ion-label position="stacked">Veículo *</ion-label>
+              <ion-select [(ngModel)]="createFormData.veiculo_id" placeholder="Selecione">
+                <ion-select-option *ngFor="let v of veiculos" [value]="v.id">
+                  {{v.marca}} {{v.modelo}} - {{v.placa}}
+                </ion-select-option>
+              </ion-select>
+            </ion-item>
+          </div>
+
+          <!-- Hodômetro e Sistema -->
+          <div class="form-row">
+            <ion-item fill="outline">
+              <ion-label position="stacked">Hodômetro (km) *</ion-label>
+              <ion-input [(ngModel)]="createFormData.hodometro" type="text" placeholder="45000"></ion-input>
+            </ion-item>
+            <ion-item fill="outline">
+              <ion-label position="stacked">Sistema *</ion-label>
+              <ion-select [(ngModel)]="createFormData.sistema_afetado" placeholder="Selecione">
+                <ion-select-option *ngFor="let s of sistemaOptions" [value]="s">{{s}}</ion-select-option>
+              </ion-select>
+            </ion-item>
+          </div>
+
+          <!-- Problema -->
+          <ion-item fill="outline">
+            <ion-label position="stacked">Problema Apresentado *</ion-label>
+            <ion-textarea [(ngModel)]="createFormData.problema_apresentado" rows="3" placeholder="Descreva o problema..."></ion-textarea>
+          </ion-item>
+
+          <!-- Causa -->
+          <ion-item fill="outline">
+            <ion-label position="stacked">Causa da Avaria *</ion-label>
+            <ion-textarea [(ngModel)]="createFormData.causa_da_avaria" rows="3" placeholder="Possível causa..."></ion-textarea>
+          </ion-item>
+
+          <!-- Tipo -->
+          <ion-item fill="outline">
+            <ion-label position="stacked">Tipo de Manutenção *</ion-label>
+            <ion-select [(ngModel)]="createFormData.manutencao">
+              <ion-select-option value="PREVENTIVA">Preventiva</ion-select-option>
+              <ion-select-option value="CORRETIVA">Corretiva</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <!-- Botões -->
+          <div class="form-buttons">
+            <ion-button expand="block" (click)="createOrdemServico()" [disabled]="!isCreateFormValid()" color="primary">
+              <ion-icon name="checkmark-outline" slot="start"></ion-icon>
+              Criar OS
+            </ion-button>
+            <ion-button expand="block" fill="outline" (click)="hideCreateOS()" class="mobile-only">
+              <ion-icon name="close-outline" slot="start"></ion-icon>
+              Cancelar
+            </ion-button>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <!-- LIST VIEW -->
+    <div *ngIf="!showCreateForm">
+      <!-- Mobile Header -->
+      <div class="mobile-header mobile-only">
+        <h2>Ordens de Serviço</h2>
+        <p>Gerencie todas as OS</p>
+      </div>
+
+      <!-- Filters -->
+      <div class="filters">
+        <ion-searchbar [(ngModel)]="searchTerm" (ionInput)="onSearchChange($event)" placeholder="Buscar OS..."></ion-searchbar>
+        <ion-select [(ngModel)]="selectedStatus" (ionChange)="onStatusChange($event)" placeholder="Status">
+          <ion-select-option *ngFor="let opt of statusOptions" [value]="opt.value">{{opt.label}}</ion-select-option>
+        </ion-select>
+      </div>
+
+      <!-- Stats -->
+      <ion-card class="stats-card" *ngIf="!loading">
+        <ion-card-content>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <span class="number">{{ordensServico.length}}</span>
+              <span class="label">Total</span>
+            </div>
+            <div class="stat-item">
+              <span class="number warning">{{getOSByStatus('ABERTA').length}}</span>
+              <span class="label">Abertas</span>
+            </div>
+            <div class="stat-item">
+              <span class="number success">{{getOSByStatus('FECHADA').length}}</span>
+              <span class="label">Fechadas</span>
+            </div>
+            <div class="stat-item">
+              <span class="number primary">{{getOSByStatus('RETIRADA').length}}</span>
+              <span class="label">Retiradas</span>
+            </div>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Loading -->
+      <div *ngIf="loading" class="loading-cards">
+        <ion-card *ngFor="let i of [1,2,3]">
+          <ion-card-content>
+            <ion-skeleton-text animated style="width: 60%; height: 20px;"></ion-skeleton-text>
+            <ion-skeleton-text animated style="width: 40%; height: 16px;"></ion-skeleton-text>
+            <ion-skeleton-text animated style="width: 80%; height: 14px;"></ion-skeleton-text>
+          </ion-card-content>
+        </ion-card>
+      </div>
+
+      <!-- OS List -->
+      <div class="os-grid" *ngIf="!loading">
+        <ion-card *ngFor="let os of filteredOrdens; trackBy: trackByOSId" class="os-card">
+          <ion-card-header>
+            <div class="os-header">
+              <div>
+                <ion-card-title>OS #{{os.id}}</ion-card-title>
+                <ion-card-subtitle>{{formatDate(os.created_at)}}</ion-card-subtitle>
+              </div>
+              <div class="os-actions">
+                <ion-badge [color]="getStatusColor(os.situacao_os)">
+                  {{getStatusDisplayName(os.situacao_os)}}
+                </ion-badge>
+                <!-- Botão para adicionar serviços/peças (só para OS abertas) -->
+                <ion-button 
+                  *ngIf="os.situacao_os === 'ABERTA'"
+                  fill="clear" 
+                  size="small" 
+                  color="primary"
+                  (click)="addServicosPecas(os, $event)"
+                  class="add-services-btn">
+                  <ion-icon name="add-circle-outline" slot="icon-only"></ion-icon>
+                </ion-button>
+              </div>
+            </div>
+          </ion-card-header>
+          <ion-card-content (click)="viewOSDetails(os)">
+            <div class="os-info">
+              <p><ion-icon name="car-outline"></ion-icon> {{getVeiculoDisplayName(os.veiculo)}}</p>
+              <p><ion-icon name="warning-outline"></ion-icon> {{os.problema_apresentado}}</p>
+              <p><ion-icon name="cog-outline"></ion-icon> {{os.sistema_afetado}}</p>
+              <p><ion-icon name="speedometer-outline"></ion-icon> {{os.hodometro}} km</p>
+              <!-- Informação do mecânico para OS fechadas -->
+              <p *ngIf="os.situacao_os === 'FECHADA'" class="mechanic-info">
+                <ion-icon name="person-outline"></ion-icon> 
+                <span class="mechanic-label">Mecânicos:</span> 
+                <span *ngIf="os.encerrar_os || (os.encerramentos && os.encerramentos.length > 0); else loadingMechanic">
+                  {{getMechanicsDisplayNames(os)}}
+                </span>
+                <ng-template #loadingMechanic>
+                  <ion-spinner name="dots" style="width: 16px; height: 16px;"></ion-spinner>
+                  <span style="margin-left: 8px;">Carregando...</span>
+                </ng-template>
+              </p>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state" *ngIf="!loading && filteredOrdens.length === 0">
+        <ion-icon name="construct-outline"></ion-icon>
+        <h3>Nenhuma OS encontrada</h3>
+        <p>{{searchTerm || selectedStatus ? 'Tente ajustar os filtros' : 'Crie a primeira OS'}}</p>
+        <ion-button fill="outline" (click)="showCreateOS()" *ngIf="!searchTerm && !selectedStatus">
+          <ion-icon name="add" slot="start"></ion-icon>
+          Criar OS
+        </ion-button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FAB (Mobile) -->
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed" class="mobile-only" *ngIf="!showCreateForm">
+    <ion-fab-button color="primary" (click)="showCreateOS()">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
+</ion-content>

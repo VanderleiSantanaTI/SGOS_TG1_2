@@ -1,0 +1,308 @@
+/*
+ * App Global CSS
+ * ----------------------------------------------------------------------------
+ * Put style rules here that you want to apply globally. These styles are for
+ * the entire app and not just one component. Additionally, this file can be
+ * used as an entry point to import other CSS/Sass files to be included in the
+ * output CSS.
+ * For more information on global stylesheets, visit the documentation:
+ * https://ionicframework.com/docs/layout/global-stylesheets
+ */
+
+/* Core CSS required for Ionic components to work properly */
+@import "~@ionic/angular/css/core.css";
+
+/* Basic CSS for apps built with Ionic */
+@import "~@ionic/angular/css/normalize.css";
+@import "~@ionic/angular/css/structure.css";
+@import "~@ionic/angular/css/typography.css";
+@import '~@ionic/angular/css/display.css';
+
+/* Optional CSS utils that can be commented out */
+@import "~@ionic/angular/css/padding.css";
+@import "~@ionic/angular/css/float-elements.css";
+@import "~@ionic/angular/css/text-alignment.css";
+@import "~@ionic/angular/css/text-transformation.css";
+@import "~@ionic/angular/css/flex-utils.css";
+
+/* Custom Global Styles */
+
+/* Responsive breakpoints */
+:root {
+  --mobile-max: 767px;
+  --tablet-min: 768px;
+  --tablet-max: 1023px;
+  --desktop-min: 1024px;
+  --large-desktop-min: 1440px;
+}
+
+/* Global responsive utilities */
+.mobile-only {
+  @media (min-width: 768px) {
+    display: none !important;
+  }
+}
+
+.desktop-only {
+  @media (max-width: 767px) {
+    display: none !important;
+  }
+}
+
+.tablet-only {
+  @media (max-width: 767px), (min-width: 1024px) {
+    display: none !important;
+  }
+}
+
+/* Container responsivo */
+.responsive-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
+
+  @media (min-width: 768px) {
+    padding: 0 24px;
+  }
+
+  @media (min-width: 1024px) {
+    padding: 0 32px;
+  }
+}
+
+/* Grid responsivo customizado */
+.responsive-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+
+  @media (min-width: 1440px) {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 28px;
+  }
+}
+
+/* Cards responsivos */
+.responsive-card {
+  --background: var(--ion-color-light);
+  --color: var(--ion-color-dark);
+  margin: 8px 0;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  @media (min-width: 768px) {
+    margin: 12px 0;
+    border-radius: 16px;
+  }
+
+  @media (min-width: 1024px) {
+    margin: 16px 0;
+  }
+}
+
+/* Formulários responsivos */
+.responsive-form {
+  .form-group {
+    margin-bottom: 16px;
+
+    @media (min-width: 768px) {
+      margin-bottom: 20px;
+    }
+  }
+
+  .form-row {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: 1fr;
+
+    @media (min-width: 768px) {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    @media (min-width: 1024px) {
+      gap: 20px;
+    }
+  }
+}
+
+/* Botões responsivos */
+.responsive-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+    justify-content: flex-end;
+    gap: 16px;
+  }
+
+  ion-button {
+    --border-radius: 8px;
+    height: 44px;
+
+    @media (min-width: 768px) {
+      min-width: 120px;
+      height: 40px;
+    }
+  }
+}
+
+/* Layout principal responsivo */
+.main-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+  }
+}
+
+.sidebar-layout {
+  @media (min-width: 768px) {
+    width: 280px;
+    min-width: 280px;
+  }
+
+  @media (min-width: 1024px) {
+    width: 320px;
+    min-width: 320px;
+  }
+}
+
+.content-layout {
+  flex: 1;
+  padding: 16px;
+
+  @media (min-width: 768px) {
+    padding: 24px;
+  }
+
+  @media (min-width: 1024px) {
+    padding: 32px;
+  }
+}
+
+/* Tabelas responsivas */
+.responsive-table {
+  overflow-x: auto;
+  
+  table {
+    min-width: 600px;
+    
+    @media (min-width: 768px) {
+      min-width: 100%;
+    }
+  }
+}
+
+/* Status indicators */
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+
+  &.status-aberta {
+    background-color: var(--ion-color-warning);
+    color: var(--ion-color-warning-contrast);
+  }
+
+  &.status-fechada {
+    background-color: var(--ion-color-success);
+    color: var(--ion-color-success-contrast);
+  }
+
+  &.status-retirada {
+    background-color: var(--ion-color-primary);
+    color: var(--ion-color-primary-contrast);
+  }
+}
+
+/* Loading states */
+.loading-skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: 4px;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Utility classes */
+.text-center {
+  text-align: center;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.full-height {
+  height: 100%;
+}
+
+.no-margin {
+  margin: 0;
+}
+
+.no-padding {
+  padding: 0;
+}
+
+/* Scrollable content */
+.scrollable-content {
+  overflow-y: auto;
+  max-height: calc(100vh - 200px);
+
+  @media (min-width: 768px) {
+    max-height: calc(100vh - 150px);
+  }
+}
+
+/* Custom scrollbar for webkit browsers */
+.scrollable-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollable-content::-webkit-scrollbar-track {
+  background: var(--ion-color-light);
+}
+
+.scrollable-content::-webkit-scrollbar-thumb {
+  background: var(--ion-color-medium);
+  border-radius: 3px;
+}
+
+.scrollable-content::-webkit-scrollbar-thumb:hover {
+  background: var(--ion-color-dark);
+}

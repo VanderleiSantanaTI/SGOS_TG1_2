@@ -1,0 +1,76 @@
+<!-- Mobile Header (só para mobile) -->
+<ion-header [translucent]="true" class="mobile-only">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Dashboard</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="dashboard-container">
+    
+    <!-- Desktop Page Header -->
+    <div class="desktop-page-header desktop-only">
+      <h1>Dashboard</h1>
+      <div class="header-actions">
+        <ion-button color="primary" (click)="createNewOS()">
+          <ion-icon name="add" slot="start"></ion-icon>
+          Nova OS
+        </ion-button>
+      </div>
+    </div>
+
+    <!-- Welcome Section -->
+    <div class="welcome-section">
+      <h2 class="mobile-only">{{getGreetingMessage()}}, {{getUserFirstName()}}!</h2>
+      <h3 class="desktop-only">{{getGreetingMessage()}}, {{getUserFirstName()}}!</h3>
+      <p>Bem-vindo ao painel de controle do SGOS</p>
+    </div>
+
+    <!-- Stats Component -->
+    <app-dashboard-stats 
+      [stats]="stats" 
+      [loading]="loading" 
+      [currentUser]="currentUser">
+    </app-dashboard-stats>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions-section">
+      <h3>Ações Rápidas</h3>
+      <div class="actions-grid">
+        <ion-button 
+          expand="block" 
+          fill="outline" 
+          (click)="createNewOS()">
+          <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+          Nova OS
+        </ion-button>
+        <ion-button 
+          expand="block" 
+          fill="outline" 
+          (click)="navigateTo('/veiculos')">
+          <ion-icon name="car-outline" slot="start"></ion-icon>
+          Veículos
+        </ion-button>
+        <ion-button 
+          expand="block" 
+          fill="outline" 
+          (click)="navigateTo('/relatorios')">
+          <ion-icon name="bar-chart-outline" slot="start"></ion-icon>
+          Relatórios
+        </ion-button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FAB (Mobile) -->
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed" class="mobile-only">
+    <ion-fab-button color="primary" (click)="createNewOS()">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
+</ion-content>
