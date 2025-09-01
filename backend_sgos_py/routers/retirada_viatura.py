@@ -143,6 +143,9 @@ async def criar_retirada_viatura(
         # Atualizar a situação da OS para RETIRADA
         ordem_servico.situacao_os = "RETIRADA"
         
+        # Atualizar a situação do encerramento para RETIRADA
+        encerramento.situacao_os = "RETIRADA"
+        
         db_retirada = RetiradaViatura(
             nome=retirada_data.nome,
             data=retirada_data.data,
@@ -232,9 +235,13 @@ async def deletar_retirada_viatura(
         if not retirada:
             return create_not_found_response("Retirada de viatura")
         
-        # Reverter a situação da OS para FECHADA
+        # Reverter a situação da OS e encerramento para FECHADA
         encerramento = db.query(EncerrarOS).filter(EncerrarOS.id == retirada.encerrar_os_id).first()
         if encerramento:
+            # Reverter encerramento para FECHADA
+            encerramento.situacao_os = "FECHADA"
+            
+            # Reverter OS para FECHADA
             ordem_servico = db.query(OrdemServico).filter(OrdemServico.id == encerramento.abrir_os_id).first()
             if ordem_servico:
                 ordem_servico.situacao_os = "FECHADA"

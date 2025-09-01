@@ -15,17 +15,11 @@ security = HTTPBearer()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verifica se a senha está correta"""
-    # Compatibilidade com hashes antigos (temporário)
-    if hashed_password.startswith("SIMPLE_HASH:"):
-        expected_password = hashed_password.replace("SIMPLE_HASH:", "")
-        return plain_password == expected_password
-    
-    # Verificação normal com bcrypt
+    """Verifica se a senha está correta usando bcrypt"""
     try:
         return pwd_context.verify(plain_password, hashed_password)
     except Exception as e:
-        print(f"⚠️ Erro no bcrypt: {e}")
+        print(f"⚠️ Erro ao verificar senha: {e}")
         return False
 
 def get_password_hash(password: str) -> str:
@@ -33,9 +27,8 @@ def get_password_hash(password: str) -> str:
     try:
         return pwd_context.hash(password)
     except Exception as e:
-        print(f"⚠️ Erro ao gerar hash bcrypt: {e}")
-        # Fallback temporário apenas em caso de erro
-        return f"SIMPLE_HASH:{password}"
+        print(f"⚠️ Erro ao gerar hash da senha: {e}")
+        raise e
 
 def authenticate_user(db: Session, username: str, password: str) -> Optional[Usuario]:
     """Autentica o usuário"""
