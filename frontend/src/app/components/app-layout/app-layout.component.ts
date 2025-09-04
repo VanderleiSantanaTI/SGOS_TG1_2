@@ -20,7 +20,7 @@ export class AppLayoutComponent implements OnInit, OnDestroy {
     { title: 'Dashboard', url: '/dashboard', icon: 'home-outline' },
     { title: 'Ordens de Serviço', url: '/ordens-servico', icon: 'construct-outline' },
     { title: 'Peças e Serviços', url: '/pecas-servicos', icon: 'hardware-chip-outline', role: 'MECANICO' },
-    { title: 'Veículos', url: '/veiculos', icon: 'car-outline' },
+    { title: 'Veículos', url: '/veiculos', icon: 'car-outline', role: 'SUPERVISOR' },
     { title: 'Usuários', url: '/usuarios', icon: 'people-outline', role: 'SUPERVISOR' },
     { title: 'Relatórios', url: '/relatorios', icon: 'bar-chart-outline', role: 'SUPERVISOR' }
   ];
