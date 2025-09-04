@@ -201,7 +201,7 @@
 ion-list {
   ion-item {
     &.active {
-      --background: var(--ion-color-primary-tint);
+      // --background: var(--ion-color-primary-tint);
       --color: var(--ion-color-primary);
       font-weight: 500;
 

@@ -181,16 +181,6 @@
                 <ion-badge [color]="getStatusColor(os.situacao_os)">
                   {{getStatusDisplayName(os.situacao_os)}}
                 </ion-badge>
-                <!-- Botão para adicionar serviços/peças (só para OS abertas) -->
-                <ion-button 
-                  *ngIf="os.situacao_os === 'ABERTA'"
-                  fill="clear" 
-                  size="small" 
-                  color="primary"
-                  (click)="addServicosPecas(os, $event)"
-                  class="add-services-btn">
-                  <ion-icon name="add-circle-outline" slot="icon-only"></ion-icon>
-                </ion-button>
               </div>
             </div>
           </ion-card-header>

@@ -3,7 +3,7 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session, joinedload
 from database import get_db
-from models import OrdemServico, Veiculo, Usuario
+from models import OrdemServico, Veiculo, Usuario, EncerrarOS, RetiradaViatura
 from schemas import OrdemServico as OrdemServicoSchema, OrdemServicoCreate, OrdemServicoUpdate, MessageResponse, PaginatedResponse
 from auth import get_current_active_user
 
@@ -127,10 +127,74 @@ async def obter_ordem_servico(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Ordem de serviço não encontrada"
         )
+    
+    # Buscar informações de encerramento
+    encerramento = db.query(EncerrarOS).filter(EncerrarOS.abrir_os_id == ordem_id).first()
+    
+    # Buscar informações de retirada se existir encerramento
+    retirada_viatura = None
+    if encerramento:
+        retirada_viatura = db.query(RetiradaViatura).options(
+            joinedload(RetiradaViatura.usuario)
+        ).filter(RetiradaViatura.encerrar_os_id == encerramento.id).first()
+    
+    # Montar resposta com informações adicionais
+    ordem_data = {
+        "id": ordem.id,
+        "data": ordem.data,
+        "veiculo_id": ordem.veiculo_id,
+        "hodometro": ordem.hodometro,
+        "problema_apresentado": ordem.problema_apresentado,
+        "sistema_afetado": ordem.sistema_afetado,
+        "causa_da_avaria": ordem.causa_da_avaria,
+        "manutencao": ordem.manutencao,
+        "situacao_os": ordem.situacao_os,
+        "usuario_id": ordem.usuario_id,
+        "perfil": ordem.perfil,
+        "created_at": ordem.created_at,
+        "veiculo": {
+            "id": ordem.veiculo.id,
+            "marca": ordem.veiculo.marca,
+            "modelo": ordem.veiculo.modelo,
+            "placa": ordem.veiculo.placa,
+            "patrimonio": ordem.veiculo.patrimonio
+        } if ordem.veiculo else None,
+        "usuario": {
+            "id": ordem.usuario.id,
+            "nome": ordem.usuario.nome_completo,
+            "username": ordem.usuario.username,
+            "perfil": ordem.usuario.perfil
+        } if ordem.usuario else None,
+        "encerrar_os": {
+            "id": encerramento.id,
+            "nome_mecanico": encerramento.nome_mecanico,
+            "data_da_manutencao": encerramento.data_da_manutencao,
+            "situacao": encerramento.situacao_os,
+            "tempo_total": encerramento.tempo_total,
+            "usuario_id": encerramento.usuario_id,
+            "abrir_os_id": encerramento.abrir_os_id,
+            "modelo_veiculo": encerramento.modelo_veiculo,
+            "created_at": encerramento.created_at
+        } if encerramento else None,
+        "retirada_viatura": {
+            "id": retirada_viatura.id,
+            "nome": retirada_viatura.nome,
+            "data": retirada_viatura.data,
+            "encerrar_os_id": retirada_viatura.encerrar_os_id,
+            "usuario_id": retirada_viatura.usuario_id,
+            "created_at": retirada_viatura.created_at,
+            "usuario": {
+                "id": retirada_viatura.usuario.id,
+                "username": retirada_viatura.usuario.username,
+                "nome_completo": retirada_viatura.usuario.nome_completo
+            } if retirada_viatura.usuario else None
+        } if retirada_viatura else None
+    }
+    
     from utils.response_utils import create_success_response
     
     return create_success_response(
-        data=ordem,
+        data=ordem_data,
         message="Ordem de serviço encontrada com sucesso"
     )
 
@@ -162,6 +226,10 @@ async def criar_ordem_servico(
     )
     
     db.add(db_ordem)
+    
+    # Alterar status do veículo para MANUTENCAO
+    veiculo.status = "MANUTENCAO"
+    
     db.commit()
     db.refresh(db_ordem)
     

@@ -2,7 +2,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from database import get_db
-from models import RetiradaViatura, EncerrarOS, Usuario, OrdemServico
+from models import RetiradaViatura, EncerrarOS, Usuario, OrdemServico, Veiculo
 from schemas import RetiradaViatura as RetiradaViaturaSchema, RetiradaViaturaCreate, RetiradaViaturaUpdate
 from auth import get_current_active_user
 from utils.response_utils import (
@@ -146,6 +146,11 @@ async def criar_retirada_viatura(
         # Atualizar a situação do encerramento para RETIRADA
         encerramento.situacao_os = "RETIRADA"
         
+        # Alterar status do veículo para ATIVO (volta ao serviço)
+        veiculo = db.query(Veiculo).filter(Veiculo.id == ordem_servico.veiculo_id).first()
+        if veiculo:
+            veiculo.status = "ATIVO"
+        
         db_retirada = RetiradaViatura(
             nome=retirada_data.nome,
             data=retirada_data.data,
@@ -202,7 +207,7 @@ async def atualizar_retirada_viatura(
                 )
         
         # Atualizar campos
-        update_data = retirada_data.dict(exclude_unset=True)
+        update_data = retirada_data.model_dump(exclude_unset=True)
         for field, value in update_data.items():
             setattr(retirada, field, value)
         

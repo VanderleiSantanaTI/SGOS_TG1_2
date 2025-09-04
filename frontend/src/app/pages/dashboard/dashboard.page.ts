@@ -1,16 +1,19 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { MenuController } from '@ionic/angular';
 import { HttpClient } from '@angular/common/http';
+import { Subscription } from 'rxjs';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.page.html',
   styleUrls: ['./dashboard.page.scss'],
 })
-export class DashboardPage implements OnInit {
+export class DashboardPage implements OnInit, OnDestroy {
   currentUser: any = null;
   loading = false;
+  private authSubscriptions: Subscription[] = [];
 
   stats = {
     ordensServico: { total: 0, abertas: 0, fechadas: 0, retiradas: 0 },
@@ -21,23 +24,32 @@ export class DashboardPage implements OnInit {
   constructor(
     private router: Router,
     private menuController: MenuController,
-    private http: HttpClient
+    private http: HttpClient,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
-    // Get user from localStorage
-    const userStr = localStorage.getItem('sgos_user');
-    if (userStr) {
-      this.currentUser = JSON.parse(userStr);
-    }
-
+    this.setupAuthSubscriptions();
     this.loadStats();
+  }
+
+  ngOnDestroy() {
+    this.authSubscriptions.forEach(sub => sub.unsubscribe());
+  }
+
+  setupAuthSubscriptions() {
+    // Subscribe to current user changes
+    const userSub = this.authService.currentUser$.subscribe(user => {
+      this.currentUser = user;
+    });
+    
+    this.authSubscriptions.push(userSub);
   }
 
   private async loadStats() {
     this.loading = true;
     try {
-      const token = localStorage.getItem('sgos_token');
+      const token = this.authService.getToken();
       const options: any = {
         headers: {
           'Content-Type': 'application/json'

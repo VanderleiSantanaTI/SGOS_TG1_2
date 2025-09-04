@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ToastController } from '@ionic/angular';
-import { HttpClient } from '@angular/common/http';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login-form',
@@ -18,7 +18,7 @@ export class LoginFormComponent implements OnInit {
     private formBuilder: FormBuilder,
     private router: Router,
     private toastController: ToastController,
-    private http: HttpClient
+    private authService: AuthService
   ) {
     this.loginForm = this.createForm();
   }
@@ -39,18 +39,13 @@ export class LoginFormComponent implements OnInit {
       try {
         const credentials = this.loginForm.value;
         
-        const response: any = await this.http.post('http://localhost:8000/api/v1/auth/login', credentials).toPromise();
+        // Use AuthService for login
+        const response = await this.authService.login(credentials).toPromise();
         
         console.log('Login response:', response);
         
         if (response && (response.status === 'success' || response.success)) {
           await this.showSuccessToast('Login realizado com sucesso!');
-          
-          // Store token and user data
-          if (response.data?.access_token) {
-            localStorage.setItem('sgos_token', response.data.access_token);
-            localStorage.setItem('sgos_user', JSON.stringify(response.data.user));
-          }
           
           // Navigate to dashboard
           await this.router.navigate(['/dashboard']);

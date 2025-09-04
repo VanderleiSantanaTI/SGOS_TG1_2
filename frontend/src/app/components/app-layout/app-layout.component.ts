@@ -1,17 +1,20 @@
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
 import { MenuController, Platform } from '@ionic/angular';
+import { Subscription } from 'rxjs';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-layout',
   templateUrl: './app-layout.component.html',
   styleUrls: ['./app-layout.component.scss'],
 })
-export class AppLayoutComponent implements OnInit {
+export class AppLayoutComponent implements OnInit, OnDestroy {
   currentUser: any = null;
   isAuthenticated = false;
   isMobile = true;
   screenWidth = 0;
+  private authSubscriptions: Subscription[] = [];
 
   menuItems = [
     { title: 'Dashboard', url: '/dashboard', icon: 'home-outline' },
@@ -19,19 +22,32 @@ export class AppLayoutComponent implements OnInit {
     { title: 'Peças e Serviços', url: '/pecas-servicos', icon: 'hardware-chip-outline', role: 'MECANICO' },
     { title: 'Veículos', url: '/veiculos', icon: 'car-outline' },
     { title: 'Usuários', url: '/usuarios', icon: 'people-outline', role: 'SUPERVISOR' },
-    { title: 'Relatórios', url: '/relatorios', icon: 'bar-chart-outline', role: 'SUPERVISOR' },
-    { title: 'Configurações', url: '/configuracoes', icon: 'settings-outline', role: 'ADMIN' }
+    { title: 'Relatórios', url: '/relatorios', icon: 'bar-chart-outline', role: 'SUPERVISOR' }
   ];
 
   constructor(
     private router: Router,
     private menuController: MenuController,
-    private platform: Platform
+    private platform: Platform,
+    private authService: AuthService
   ) {}
 
-  ngOnInit() {
-    this.checkAuth();
+  async ngOnInit() {
     this.updateScreenSize();
+    this.setupAuthSubscriptions();
+    
+    // Force initial check of auth state
+    this.checkInitialAuthState();
+  }
+
+  private checkInitialAuthState() {
+    // Check if user is already authenticated
+    this.isAuthenticated = this.authService.isAuthenticated();
+    this.currentUser = this.authService.getCurrentUser();
+  }
+
+  ngOnDestroy() {
+    this.authSubscriptions.forEach(sub => sub.unsubscribe());
   }
 
   @HostListener('window:resize', ['$event'])
@@ -44,14 +60,18 @@ export class AppLayoutComponent implements OnInit {
     this.isMobile = this.screenWidth < 768;
   }
 
-  checkAuth() {
-    const token = localStorage.getItem('sgos_token');
-    const userStr = localStorage.getItem('sgos_user');
+  setupAuthSubscriptions() {
+    // Subscribe to authentication state changes
+    const authSub = this.authService.isAuthenticated$.subscribe(isAuth => {
+      this.isAuthenticated = isAuth;
+    });
     
-    if (token && userStr) {
-      this.currentUser = JSON.parse(userStr);
-      this.isAuthenticated = true;
-    }
+    // Subscribe to current user changes
+    const userSub = this.authService.currentUser$.subscribe(user => {
+      this.currentUser = user;
+    });
+    
+    this.authSubscriptions.push(authSub, userSub);
   }
 
   hasPermission(item: any): boolean {
@@ -77,11 +97,8 @@ export class AppLayoutComponent implements OnInit {
   }
 
   async logout() {
-    localStorage.clear();
-    this.currentUser = null;
-    this.isAuthenticated = false;
+    await this.authService.logout();
     await this.menuController.close();
-    await this.router.navigate(['/login']);
   }
 
   getUserInitials(): string {

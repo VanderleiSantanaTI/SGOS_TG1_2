@@ -39,8 +39,30 @@ export class AuthService {
   }
 
   private async initStorage() {
-    await this.storage.create();
-    await this.loadStoredAuth();
+    try {
+      await this.storage.create();
+      await this.loadStoredAuth();
+    } catch (error) {
+      console.error('Error initializing storage:', error);
+      // Fallback to localStorage only
+      this.loadStoredAuthFromLocalStorage();
+    }
+  }
+
+  private loadStoredAuthFromLocalStorage() {
+    try {
+      const token = localStorage.getItem(this.TOKEN_KEY);
+      const userStr = localStorage.getItem(this.USER_KEY);
+      const userData = userStr ? JSON.parse(userStr) : null;
+
+      if (token && userData) {
+        this.tokenSubject.next(token);
+        this.currentUserSubject.next(userData);
+        this.isAuthenticatedSubject.next(true);
+      }
+    } catch (error) {
+      console.error('Error loading auth from localStorage:', error);
+    }
   }
 
   /**
@@ -48,8 +70,18 @@ export class AuthService {
    */
   private async loadStoredAuth() {
     try {
-      const token = await this.storage.get(this.TOKEN_KEY);
-      const userData = await this.storage.get(this.USER_KEY);
+      // Try Ionic Storage first, fallback to localStorage
+      let token = await this.storage.get(this.TOKEN_KEY);
+      let userData = await this.storage.get(this.USER_KEY);
+      
+      // Fallback to localStorage if Ionic Storage is empty
+      if (!token) {
+        token = localStorage.getItem(this.TOKEN_KEY);
+      }
+      if (!userData) {
+        const userStr = localStorage.getItem(this.USER_KEY);
+        userData = userStr ? JSON.parse(userStr) : null;
+      }
 
       if (token && userData) {
         this.tokenSubject.next(token);
@@ -76,9 +108,11 @@ export class AuthService {
             this.currentUserSubject.next(user);
             this.isAuthenticatedSubject.next(true);
             
-            // Store in persistent storage
+            // Store in both Ionic Storage and localStorage for compatibility
             await this.storage.set(this.TOKEN_KEY, access_token);
             await this.storage.set(this.USER_KEY, user);
+            localStorage.setItem(this.TOKEN_KEY, access_token);
+            localStorage.setItem(this.USER_KEY, JSON.stringify(user));
           }
         }),
         catchError((error) => {
@@ -98,9 +132,11 @@ export class AuthService {
       this.currentUserSubject.next(null);
       this.isAuthenticatedSubject.next(false);
       
-      // Clear storage
+      // Clear both storage systems
       await this.storage.remove(this.TOKEN_KEY);
       await this.storage.remove(this.USER_KEY);
+      localStorage.removeItem(this.TOKEN_KEY);
+      localStorage.removeItem(this.USER_KEY);
       
       // Redirect to login
       this.router.navigate(['/login']);

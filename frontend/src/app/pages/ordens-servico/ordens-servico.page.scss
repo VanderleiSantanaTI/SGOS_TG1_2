@@ -7,6 +7,19 @@
   }
 }
 
+// Modal Styles
+.os-details-modal {
+  --width: 90%;
+  --max-width: 800px;
+  --height: 90%;
+  --border-radius: 16px;
+  
+  @media (min-width: 768px) {
+    --width: 80%;
+    --max-width: 1000px;
+  }
+}
+
 // Desktop Page Header
 .desktop-page-header {
   display: flex;
@@ -227,6 +240,41 @@
 
   ion-card {
     margin: 0;
+  }
+}
+
+// Clickable Cards
+.clickable-card {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+  
+  .os-header {
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      
+      .click-indicator {
+        color: var(--ion-color-medium);
+        font-size: 16px;
+        transition: all 0.3s ease;
+      }
+    }
+  }
+  
+  &:hover .click-indicator {
+    color: var(--ion-color-primary);
+    transform: translateX(4px);
   }
 }
 

@@ -4,6 +4,8 @@ import { MenuController, LoadingController, ToastController, AlertController, Mo
 import { HttpClient } from '@angular/common/http';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { environment } from '../../../environments/environment';
 
 interface Veiculo {
   id: number;
@@ -12,10 +14,15 @@ interface Veiculo {
   placa: string;
   su_cia_viatura: string;
   patrimonio: string;
-  ano_fabricacao?: string;
-  cor?: string;
+  ano_fabricacao: string;
+  cor: string;
+  chassi: string;
+  motor: string;
+  combustivel: string;
+  observacoes: string;
   status: 'ATIVO' | 'MANUTENCAO' | 'INATIVO';
   created_at: string;
+  updated_at: string;
 }
 
 @Component({
@@ -25,6 +32,9 @@ interface Veiculo {
 })
 export class VeiculosPage implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
+  
+  // Configurações do environment
+  environment = environment;
   
   veiculos: Veiculo[] = [];
   filteredVeiculos: Veiculo[] = [];
@@ -38,11 +48,41 @@ export class VeiculosPage implements OnInit, OnDestroy {
   itemsPerPage = 10;
   totalItems = 0;
   
+  // Form properties
+  showCreateForm = false;
+  showEditForm = false;
+  editingVeiculo: Veiculo | null = null;
+  
+  veiculoForm!: FormGroup;
+  
   statusOptions = [
     { value: '', label: 'Todos' },
     { value: 'ATIVO', label: 'Ativo' },
     { value: 'MANUTENCAO', label: 'Manutenção' },
     { value: 'INATIVO', label: 'Inativo' }
+  ];
+
+  combustivelOptions = [
+    'Diesel',
+    'Gasolina',
+    'Flex',
+    'Etanol',
+    'GNV',
+    'Elétrico',
+    'Híbrido'
+  ];
+
+  ciaOptions = [
+    '1ª Cia',
+    '2ª Cia',
+    '3ª Cia',
+    '4ª Cia',
+    '5ª Cia',
+    '6ª Cia',
+    '7ª Cia',
+    '8ª Cia',
+    '9ª Cia',
+    '10ª Cia'
   ];
 
   constructor(
@@ -52,8 +92,31 @@ export class VeiculosPage implements OnInit, OnDestroy {
     private toastController: ToastController,
     private alertController: AlertController,
     private modalController: ModalController,
-    private http: HttpClient
-  ) {}
+    private http: HttpClient,
+    private formBuilder: FormBuilder
+  ) {
+    this.initializeForm();
+  }
+
+  /**
+   * Initialize the vehicle form
+   */
+  initializeForm() {
+    this.veiculoForm = this.formBuilder.group({
+      marca: ['', [Validators.required, Validators.minLength(2)]],
+      modelo: ['', [Validators.required, Validators.minLength(2)]],
+      placa: ['', [Validators.required, Validators.pattern(/^[A-Z]{3}-[0-9]{4}$/)]],
+      su_cia_viatura: ['', Validators.required],
+      patrimonio: ['', [Validators.required, Validators.minLength(3)]],
+      ano_fabricacao: ['', [Validators.required, Validators.pattern(/^[0-9]{4}$/)]],
+      cor: ['', [Validators.required, Validators.minLength(2)]],
+      chassi: ['', [Validators.required, Validators.minLength(17), Validators.maxLength(17)]],
+      motor: ['', [Validators.required, Validators.minLength(2)]],
+      combustivel: ['', Validators.required],
+      observacoes: [''],
+      status: ['ATIVO', Validators.required]
+    });
+  }
 
   ngOnInit() {
     // Get user from localStorage
@@ -77,7 +140,7 @@ export class VeiculosPage implements OnInit, OnDestroy {
     this.loading = true;
     
     try {
-      const token = localStorage.getItem('sgos_token');
+      const token = localStorage.getItem(environment.storage.token);
       const options: any = {};
       
       if (token) {
@@ -85,7 +148,7 @@ export class VeiculosPage implements OnInit, OnDestroy {
       }
       
       const response: any = await this.http.get(
-        'http://localhost:8000/api/v1/veiculos/', 
+        `${environment.apiUrl}${environment.endpoints.veiculos}/`, 
         options
       ).toPromise();
       
@@ -165,27 +228,81 @@ export class VeiculosPage implements OnInit, OnDestroy {
   }
 
   /**
-   * Navigate to create vehicle
+   * Show create vehicle form
    */
-  createVeiculo() {
+  showCreateVeiculo() {
     if (!this.isAdmin()) {
       this.showErrorToast('Apenas administradores podem cadastrar veículos');
       return;
     }
-    // For now, show alert - later implement modal/page
-    this.showCreateVeiculoModal();
+    this.showCreateForm = true;
+    this.showEditForm = false;
+    this.editingVeiculo = null;
+    this.resetForm();
   }
 
   /**
-   * Edit vehicle
+   * Show edit vehicle form
    */
-  editVeiculo(veiculo: Veiculo) {
+  showEditVeiculo(veiculo: Veiculo) {
     if (!this.canEdit()) {
       this.showErrorToast('Você não tem permissão para editar veículos');
       return;
     }
-    // For now, show alert - later implement modal/page
-    this.showEditVeiculoModal(veiculo);
+    this.showEditForm = true;
+    this.showCreateForm = false;
+    this.editingVeiculo = veiculo;
+    this.populateForm(veiculo);
+  }
+
+  /**
+   * Hide forms
+   */
+  hideForms() {
+    this.showCreateForm = false;
+    this.showEditForm = false;
+    this.editingVeiculo = null;
+    this.resetForm();
+  }
+
+  /**
+   * Reset form to default values
+   */
+  resetForm() {
+    this.veiculoForm.reset({
+      marca: '',
+      modelo: '',
+      placa: '',
+      su_cia_viatura: '',
+      patrimonio: '',
+      ano_fabricacao: '',
+      cor: '',
+      chassi: '',
+      motor: '',
+      combustivel: '',
+      observacoes: '',
+      status: 'ATIVO'
+    });
+  }
+
+  /**
+   * Populate form with vehicle data
+   */
+  populateForm(veiculo: Veiculo) {
+    this.veiculoForm.patchValue({
+      marca: veiculo.marca,
+      modelo: veiculo.modelo,
+      placa: veiculo.placa,
+      su_cia_viatura: veiculo.su_cia_viatura,
+      patrimonio: veiculo.patrimonio,
+      ano_fabricacao: veiculo.ano_fabricacao,
+      cor: veiculo.cor,
+      chassi: veiculo.chassi,
+      motor: veiculo.motor,
+      combustivel: veiculo.combustivel,
+      observacoes: veiculo.observacoes,
+      status: veiculo.status
+    });
   }
 
   /**
@@ -236,7 +353,7 @@ export class VeiculosPage implements OnInit, OnDestroy {
       }
       
       const response: any = await this.http.delete(
-        `http://localhost:8000/api/v1/veiculos/${veiculo.id}`,
+        `${environment.apiUrl}${environment.endpoints.veiculos}/${veiculo.id}`,
         options
       ).toPromise();
       
@@ -257,27 +374,161 @@ export class VeiculosPage implements OnInit, OnDestroy {
   }
 
   /**
-   * Show create vehicle modal (simplified)
+   * Save new vehicle
    */
-  async showCreateVeiculoModal() {
-    const alert = await this.alertController.create({
-      header: 'Cadastrar Veículo',
-      message: 'Funcionalidade será implementada em breve com formulário completo.',
-      buttons: ['OK']
+  async saveVeiculo() {
+    if (this.veiculoForm.invalid) {
+      await this.showErrorToast('Por favor, preencha todos os campos obrigatórios');
+      return;
+    }
+
+    const loading = await this.loadingController.create({
+      message: 'Salvando veículo...'
     });
-    await alert.present();
+    await loading.present();
+
+    let formData: any;
+    try {
+      const token = localStorage.getItem(environment.storage.token);
+      const options: any = {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      };
+      
+      if (token) {
+        options.headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      formData = this.veiculoForm.value;
+      
+      // Garantir que ano_fabricacao seja string
+      if (formData.ano_fabricacao) {
+        formData.ano_fabricacao = formData.ano_fabricacao.toString();
+      }
+      
+      // Remover campos vazios para evitar problemas de validação
+      Object.keys(formData).forEach(key => {
+        if (formData[key] === '' || formData[key] === null || formData[key] === undefined) {
+          delete formData[key];
+        }
+      });
+      
+      const response: any = await this.http.post(
+        `${environment.apiUrl}${environment.endpoints.veiculos}/`,
+        formData,
+        options
+      ).toPromise();
+      
+      console.log('Create Vehicle Response:', response);
+      
+      if (response && (response.status === 'success' || response.success)) {
+        await this.showSuccessToast(response.message || 'Veículo cadastrado com sucesso!');
+        this.hideForms();
+        await this.loadVeiculos();
+      } else {
+        throw new Error(response?.message || 'Erro ao cadastrar veículo');
+      }
+    } catch (error: any) {
+      console.error('Error creating vehicle:', error);
+      console.error('Error response:', error.error);
+      console.error('Form data sent:', formData || 'Not available');
+      
+      let errorMessage = 'Erro ao cadastrar veículo';
+      
+      if (error.error && error.error.detail) {
+        if (Array.isArray(error.error.detail)) {
+          errorMessage = error.error.detail.map((d: any) => d.msg || d.message || d).join(', ');
+        } else {
+          errorMessage = error.error.detail;
+        }
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      await this.showErrorToast(errorMessage);
+    } finally {
+      await loading.dismiss();
+    }
   }
 
   /**
-   * Show edit vehicle modal (simplified)
+   * Update existing vehicle
    */
-  async showEditVeiculoModal(veiculo: Veiculo) {
-    const alert = await this.alertController.create({
-      header: 'Editar Veículo',
-      message: `Funcionalidade de edição para ${veiculo.marca} ${veiculo.modelo} será implementada em breve.`,
-      buttons: ['OK']
+  async updateVeiculo() {
+    if (this.veiculoForm.invalid || !this.editingVeiculo) {
+      await this.showErrorToast('Por favor, preencha todos os campos obrigatórios');
+      return;
+    }
+
+    const loading = await this.loadingController.create({
+      message: 'Atualizando veículo...'
     });
-    await alert.present();
+    await loading.present();
+
+    let formData: any;
+    try {
+      const token = localStorage.getItem(environment.storage.token);
+      const options: any = {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      };
+      
+      if (token) {
+        options.headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      formData = this.veiculoForm.value;
+      
+      // Garantir que ano_fabricacao seja string
+      if (formData.ano_fabricacao) {
+        formData.ano_fabricacao = formData.ano_fabricacao.toString();
+      }
+      
+      // Remover campos vazios para evitar problemas de validação
+      Object.keys(formData).forEach(key => {
+        if (formData[key] === '' || formData[key] === null || formData[key] === undefined) {
+          delete formData[key];
+        }
+      });
+      
+      const response: any = await this.http.put(
+        `${environment.apiUrl}${environment.endpoints.veiculos}/${this.editingVeiculo.id}`,
+        formData,
+        options
+      ).toPromise();
+      
+      console.log('Update Vehicle Response:', response);
+      
+      if (response && (response.status === 'success' || response.success)) {
+        await this.showSuccessToast(response.message || 'Veículo atualizado com sucesso!');
+        this.hideForms();
+        await this.loadVeiculos();
+      } else {
+        throw new Error(response?.message || 'Erro ao atualizar veículo');
+      }
+    } catch (error: any) {
+      console.error('Error updating vehicle:', error);
+      console.error('Error response:', error.error);
+      console.error('Form data sent:', formData || 'Not available');
+      
+      let errorMessage = 'Erro ao atualizar veículo';
+      
+      if (error.error && error.error.detail) {
+        if (Array.isArray(error.error.detail)) {
+          errorMessage = error.error.detail.map((d: any) => d.msg || d.message || d).join(', ');
+        } else {
+          errorMessage = error.error.detail;
+        }
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      await this.showErrorToast(errorMessage);
+    } finally {
+      await loading.dismiss();
+    }
   }
 
   /**

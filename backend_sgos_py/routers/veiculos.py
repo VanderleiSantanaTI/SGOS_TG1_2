@@ -91,7 +91,7 @@ async def listar_veiculos(
     except Exception as e:
         return create_error_response(f"Erro ao listar veículos: {str(e)}")
 
-@router.get("/{veiculo_id}", response_model=VeiculoSchema)
+@router.get("/{veiculo_id}")
 async def obter_veiculo(
     veiculo_id: int,
     current_user: Usuario = Depends(get_current_active_user),
@@ -100,13 +100,11 @@ async def obter_veiculo(
     """Obtém um veículo específico"""
     veiculo = db.query(Veiculo).filter(Veiculo.id == veiculo_id).first()
     if not veiculo:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Veículo não encontrado"
-        )
-    return veiculo
+        return create_not_found_response("Veículo")
+    
+    return create_single_item_response(veiculo, "Veículo obtido com sucesso")
 
-@router.post("/", response_model=VeiculoSchema)
+@router.post("/")
 async def criar_veiculo(
     veiculo_data: VeiculoCreate,
     current_user: Usuario = Depends(get_current_active_user),
@@ -133,9 +131,11 @@ async def criar_veiculo(
     db.add(db_veiculo)
     db.commit()
     db.refresh(db_veiculo)
-    return db_veiculo
+    
+    # Retornar no formato padrão
+    return create_single_item_response(db_veiculo, "Veículo criado com sucesso")
 
-@router.put("/{veiculo_id}", response_model=VeiculoSchema)
+@router.put("/{veiculo_id}")
 async def atualizar_veiculo(
     veiculo_id: int,
     veiculo_data: VeiculoUpdate,
@@ -175,7 +175,9 @@ async def atualizar_veiculo(
     
     db.commit()
     db.refresh(veiculo)
-    return veiculo
+    
+    # Retornar no formato padrão
+    return create_single_item_response(veiculo, "Veículo atualizado com sucesso")
 
 @router.delete("/{veiculo_id}", response_model=MessageResponse)
 async def deletar_veiculo(

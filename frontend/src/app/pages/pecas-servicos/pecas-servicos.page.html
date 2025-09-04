@@ -31,18 +31,44 @@
             <p>Nenhuma ordem de serviço aberta encontrada.</p>
           </div>
 
-          <div *ngIf="ordensAbertas.length > 0" class="ordens-grid">
+          <!-- Barra de Busca para Ordens -->
+          <div *ngIf="ordensAbertas.length > 0" class="search-container">
+            <ion-searchbar 
+              [(ngModel)]="searchOrdens" 
+              placeholder="Buscar ordens de serviço..."
+              show-clear-button="focus"
+              [debounce]="environment.search.debounceTime">
+            </ion-searchbar>
+            <div class="search-info" *ngIf="searchOrdens">
+              <ion-chip color="primary">
+                <ion-label>{{ getFilteredOrdens().length }} de {{ ordensAbertas.length }} ordens</ion-label>
+              </ion-chip>
+            </div>
+          </div>
+
+          <!-- Mensagem quando não há resultados na busca -->
+          <div *ngIf="ordensAbertas.length > 0 && getFilteredOrdens().length === 0 && searchOrdens" class="no-results">
+            <ion-icon name="search-outline"></ion-icon>
+            <p>Nenhuma ordem encontrada para "{{ searchOrdens }}"</p>
+            <ion-button fill="clear" (click)="searchOrdens = ''">
+              <ion-icon name="close-outline" slot="start"></ion-icon>
+              Limpar busca
+            </ion-button>
+          </div>
+
+          <div *ngIf="ordensAbertas.length > 0 && getFilteredOrdens().length > 0" class="ordens-grid">
             <ion-card 
-              *ngFor="let ordem of ordensAbertas" 
+              *ngFor="let ordem of getFilteredOrdens()" 
               class="ordem-card"
               [class.selected]="ordemSelecionada?.id === ordem.id"
               (click)="selecionarOrdem(ordem)">
               <ion-card-content>
                 <div class="ordem-info">
-                  <h3>OS #{{ ordem.numero_os }}</h3>
+                  <h3>OS #{{ ordem.id }}</h3>
                   <p><strong>Veículo:</strong> {{ ordem.veiculo.placa }} - {{ ordem.veiculo.marca }} {{ ordem.veiculo.modelo }}</p>
-                  <p><strong>Data:</strong> {{ ordem.data_abertura | date:'dd/MM/yyyy' }}</p>
-                  <p><strong>Problema:</strong> {{ ordem.descricao_problema }}</p>
+                  <p><strong>Data:</strong> {{ ordem.data }}</p>
+                  <p><strong>Problema:</strong> {{ ordem.problema_apresentado }}</p>
+                  <p><strong>Sistema:</strong> {{ ordem.sistema_afetado }}</p>
                 </div>
               </ion-card-content>
             </ion-card>
@@ -56,7 +82,7 @@
           <ion-card-header>
             <ion-card-title>
               <ion-icon name="car-outline"></ion-icon>
-              Ordem #{{ ordemSelecionada.numero_os }}
+              Ordem #{{ ordemSelecionada.id }}
             </ion-card-title>
             <ion-card-subtitle>
               {{ ordemSelecionada.veiculo.placa }} - {{ ordemSelecionada.veiculo.marca }} {{ ordemSelecionada.veiculo.modelo }}
@@ -105,9 +131,11 @@
               <ion-item>
                 <ion-label position="stacked">Quantidade *</ion-label>
                 <ion-input 
-                  type="text" 
+                  type="number" 
                   formControlName="qtd" 
-                  placeholder="Ex: 1 unidade">
+                  placeholder="Ex: 1"
+                  min="1"
+                  step="1">
                 </ion-input>
               </ion-item>
 
@@ -143,7 +171,10 @@
                 <ion-input 
                   type="text" 
                   formControlName="tempo_de_servico_realizado" 
-                  placeholder="Ex: 2 horas">
+                  placeholder="Ex: 00:30"
+                  maxlength="5"
+                  pattern="[0-9]{2}:[0-9]{2}"
+                  (ionInput)="formatarTempo($event)">
                 </ion-input>
               </ion-item>
 
@@ -164,40 +195,94 @@
             <ion-card-title>
               <ion-icon name="hardware-chip-outline"></ion-icon>
               Peças Utilizadas
+              <ion-badge color="primary" slot="end">{{ calcularTotalPecas() }}</ion-badge>
             </ion-card-title>
+            <ion-card-subtitle *ngIf="pecasUtilizadas.length > 0">
+              Lista de peças utilizadas nesta ordem de serviço
+            </ion-card-subtitle>
           </ion-card-header>
           <ion-card-content>
             <div *ngIf="pecasUtilizadas.length === 0" class="no-data">
               <ion-icon name="information-circle-outline"></ion-icon>
-              <p>Nenhuma peça registrada.</p>
+              <p>Nenhuma peça registrada para esta ordem de serviço.</p>
             </div>
 
-                         <ion-list *ngIf="pecasUtilizadas.length > 0">
-               <ion-item *ngFor="let peca of pecasUtilizadas">
-                 <ion-label>
-                   <h3>{{ peca.peca_utilizada }}</h3>
-                   <p>Ficha: {{ peca.num_ficha }}</p>
-                   <p>Quantidade: {{ peca.qtd }}</p>
-                 </ion-label>
-                 <ion-button 
-                   *ngIf="hasPermission('MECANICO')"
-                   slot="end" 
-                   fill="clear" 
-                   color="danger"
-                   (click)="removerPeca(peca.id!)">
-                   <ion-icon name="trash-outline"></ion-icon>
-                 </ion-button>
-               </ion-item>
-             </ion-list>
+            <div *ngIf="pecasUtilizadas.length > 0" class="list-container">
+              <!-- Cabeçalho da Lista -->
+              <div class="list-header">
+                <div class="search-container">
+                  <ion-searchbar 
+                    [(ngModel)]="searchPecas" 
+                    placeholder="Buscar peças..."
+                    show-clear-button="focus"
+                    [debounce]="environment.search.debounceTime">
+                  </ion-searchbar>
+                </div>
+                <div class="list-actions">
+                  <ion-button 
+                    *ngIf="hasPermission('MECANICO')"
+                    fill="clear" 
+                    size="small"
+                    (click)="togglePecasForm()">
+                    <ion-icon name="add-outline" slot="icon-only"></ion-icon>
+                  </ion-button>
+                </div>
+              </div>
 
-                         <div *ngIf="pecasUtilizadas.length > 0" class="total-section">
-               <ion-item>
-                 <ion-label><strong>Total Peças:</strong></ion-label>
-                 <ion-note slot="end">
-                   <strong>{{ calcularTotalPecas() }}</strong>
-                 </ion-note>
-               </ion-item>
-             </div>
+              <!-- Lista de Peças -->
+              <ion-list>
+                <ion-item-sliding *ngFor="let peca of getFilteredPecas()">
+                  <ion-item>
+                    <ion-avatar slot="start">
+                      <ion-icon name="hardware-chip-outline"></ion-icon>
+                    </ion-avatar>
+                    <ion-label>
+                      <h2>{{ peca.peca_utilizada }}</h2>
+                      <p>
+                        <ion-icon name="document-text-outline"></ion-icon>
+                        Ficha: {{ peca.num_ficha }}
+                      </p>
+                      <p>
+                        <ion-icon name="layers-outline"></ion-icon>
+                        Quantidade: {{ peca.qtd }}
+                      </p>
+                      <p *ngIf="peca.created_at">
+                        <ion-icon name="time-outline"></ion-icon>
+                        Adicionado em: {{ peca.created_at | date:'dd/MM/yyyy HH:mm' }}
+                      </p>
+                    </ion-label>
+                    <ion-badge 
+                      *ngIf="hasPermission('MECANICO')"
+                      color="danger" 
+                      slot="end">
+                      <ion-icon name="trash-outline"></ion-icon>
+                    </ion-badge>
+                  </ion-item>
+                  
+                  <ion-item-options side="end" *ngIf="hasPermission('MECANICO')">
+                    <ion-item-option 
+                      color="danger" 
+                      (click)="confirmarRemocaoPeca(peca)">
+                      <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+                    </ion-item-option>
+                  </ion-item-options>
+                </ion-item-sliding>
+              </ion-list>
+
+              <!-- Resumo das Peças -->
+              <div class="summary-section">
+                <ion-item>
+                  <ion-icon name="stats-chart-outline" slot="start"></ion-icon>
+                  <ion-label>
+                    <h3>Resumo das Peças</h3>
+                    <p>{{ getFilteredPecas().length }} de {{ pecasUtilizadas.length }} peças</p>
+                  </ion-label>
+                  <ion-note slot="end">
+                    <strong>{{ calcularTotalPecas() }} peças</strong>
+                  </ion-note>
+                </ion-item>
+              </div>
+            </div>
           </ion-card-content>
         </ion-card>
 
@@ -207,39 +292,90 @@
             <ion-card-title>
               <ion-icon name="build-outline"></ion-icon>
               Serviços Realizados
+              <ion-badge color="secondary" slot="end">{{ calcularTotalServicos() }}</ion-badge>
             </ion-card-title>
+            <ion-card-subtitle *ngIf="servicosRealizados.length > 0">
+              Lista de serviços realizados nesta ordem de serviço
+            </ion-card-subtitle>
           </ion-card-header>
           <ion-card-content>
             <div *ngIf="servicosRealizados.length === 0" class="no-data">
               <ion-icon name="information-circle-outline"></ion-icon>
-              <p>Nenhum serviço registrado.</p>
+              <p>Nenhum serviço registrado para esta ordem de serviço.</p>
             </div>
 
-                         <ion-list *ngIf="servicosRealizados.length > 0">
-               <ion-item *ngFor="let servico of servicosRealizados">
-                 <ion-label>
-                   <h3>{{ servico.servico_realizado }}</h3>
-                   <p>Tempo: {{ servico.tempo_de_servico_realizado }}</p>
-                 </ion-label>
-                 <ion-button 
-                   *ngIf="hasPermission('MECANICO')"
-                   slot="end" 
-                   fill="clear" 
-                   color="danger"
-                   (click)="removerServico(servico.id!)">
-                   <ion-icon name="trash-outline"></ion-icon>
-                 </ion-button>
-               </ion-item>
-             </ion-list>
+            <div *ngIf="servicosRealizados.length > 0" class="list-container">
+              <!-- Cabeçalho da Lista -->
+              <div class="list-header">
+                <div class="search-container">
+                  <ion-searchbar 
+                    [(ngModel)]="searchServicos" 
+                    placeholder="Buscar serviços..."
+                    show-clear-button="focus"
+                    [debounce]="environment.search.debounceTime">
+                  </ion-searchbar>
+                </div>
+                <div class="list-actions">
+                  <ion-button 
+                    *ngIf="hasPermission('MECANICO')"
+                    fill="clear" 
+                    size="small"
+                    (click)="toggleServicosForm()">
+                    <ion-icon name="add-outline" slot="icon-only"></ion-icon>
+                  </ion-button>
+                </div>
+              </div>
 
-                         <div *ngIf="servicosRealizados.length > 0" class="total-section">
-               <ion-item>
-                 <ion-label><strong>Total Serviços:</strong></ion-label>
-                 <ion-note slot="end">
-                   <strong>{{ calcularTotalServicos() }}</strong>
-                 </ion-note>
-               </ion-item>
-             </div>
+              <!-- Lista de Serviços -->
+              <ion-list>
+                <ion-item-sliding *ngFor="let servico of getFilteredServicos()">
+                  <ion-item>
+                    <ion-avatar slot="start">
+                      <ion-icon name="build-outline"></ion-icon>
+                    </ion-avatar>
+                    <ion-label>
+                      <h2>{{ servico.servico_realizado }}</h2>
+                      <p>
+                        <ion-icon name="time-outline"></ion-icon>
+                        Tempo: {{ servico.tempo_de_servico_realizado }}
+                      </p>
+                      <p *ngIf="servico.created_at">
+                        <ion-icon name="calendar-outline"></ion-icon>
+                        Realizado em: {{ servico.created_at | date:'dd/MM/yyyy HH:mm' }}
+                      </p>
+                    </ion-label>
+                    <ion-badge 
+                      *ngIf="hasPermission('MECANICO')"
+                      color="danger" 
+                      slot="end">
+                      <ion-icon name="trash-outline"></ion-icon>
+                    </ion-badge>
+                  </ion-item>
+                  
+                  <ion-item-options side="end" *ngIf="hasPermission('MECANICO')">
+                    <ion-item-option 
+                      color="danger" 
+                      (click)="confirmarRemocaoServico(servico)">
+                      <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+                    </ion-item-option>
+                  </ion-item-options>
+                </ion-item-sliding>
+              </ion-list>
+
+              <!-- Resumo dos Serviços -->
+              <div class="summary-section">
+                <ion-item>
+                  <ion-icon name="stats-chart-outline" slot="start"></ion-icon>
+                  <ion-label>
+                    <h3>Resumo dos Serviços</h3>
+                    <p>{{ getFilteredServicos().length }} de {{ servicosRealizados.length }} serviços</p>
+                  </ion-label>
+                  <ion-note slot="end">
+                    <strong>{{ calcularTotalServicos() }} serviços</strong>
+                  </ion-note>
+                </ion-item>
+              </div>
+            </div>
           </ion-card-content>
         </ion-card>
 
@@ -248,25 +384,51 @@
           <ion-card-header>
             <ion-card-title>
               <ion-icon name="calculator-outline"></ion-icon>
-              Resumo Total
+              Resumo Total da OS
             </ion-card-title>
+            <ion-card-subtitle>
+              Estatísticas completas desta ordem de serviço
+            </ion-card-subtitle>
           </ion-card-header>
-                     <ion-card-content>
-             <ion-item>
-               <ion-label>Total Peças:</ion-label>
-               <ion-note slot="end">{{ calcularTotalPecas() }}</ion-note>
-             </ion-item>
-             <ion-item>
-               <ion-label>Total Serviços:</ion-label>
-               <ion-note slot="end">{{ calcularTotalServicos() }}</ion-note>
-             </ion-item>
-             <ion-item class="total-geral">
-               <ion-label><strong>TOTAL GERAL:</strong></ion-label>
-               <ion-note slot="end">
-                 <strong>{{ calcularTotalGeral() }}</strong>
-               </ion-note>
-             </ion-item>
-           </ion-card-content>
+          <ion-card-content>
+            <div class="stats-grid">
+              <div class="stat-item">
+                <ion-icon name="hardware-chip-outline" color="primary"></ion-icon>
+                <div class="stat-content">
+                  <h3>{{ calcularTotalPecas() }}</h3>
+                  <p>Peças Utilizadas</p>
+                </div>
+              </div>
+              
+              <div class="stat-item">
+                <ion-icon name="build-outline" color="secondary"></ion-icon>
+                <div class="stat-content">
+                  <h3>{{ calcularTotalServicos() }}</h3>
+                  <p>Serviços Realizados</p>
+                </div>
+              </div>
+              
+              <div class="stat-item total">
+                <ion-icon name="checkmark-circle-outline" color="success"></ion-icon>
+                <div class="stat-content">
+                  <h3>{{ calcularTotalGeral() }}</h3>
+                  <p>Total de Itens</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Botões de Ação -->
+            <div class="action-buttons" *ngIf="hasPermission('MECANICO')">
+              <ion-button 
+                expand="block" 
+                fill="outline" 
+                color="primary"
+                (click)="exportarRelatorio()">
+                <ion-icon name="download-outline" slot="start"></ion-icon>
+                Exportar Relatório
+              </ion-button>
+            </div>
+          </ion-card-content>
         </ion-card>
       </div>
     </div>

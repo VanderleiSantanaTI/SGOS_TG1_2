@@ -4,6 +4,8 @@ import { MenuController, LoadingController, ToastController, AlertController, Mo
 import { HttpClient } from '@angular/common/http';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
+import { OSDetailsModalComponent } from './os-details-modal.component';
 
 interface OrdemServico {
   id: number;
@@ -64,6 +66,35 @@ interface Veiculo {
   status: string;
 }
 
+interface PecaUtilizada {
+  id: number;
+  peca_utilizada: string;
+  num_ficha: string;
+  qtd: string;
+  abrir_os_id: number;
+  usuario_id: number;
+  created_at: string;
+  usuario?: {
+    id: number;
+    username: string;
+    nome_completo: string;
+  };
+}
+
+interface ServicoRealizado {
+  id: number;
+  servico_realizado: string;
+  tempo_de_servico_realizado: string;
+  abrir_os_id: number;
+  usuario_id: number;
+  created_at: string;
+  usuario?: {
+    id: number;
+    username: string;
+    nome_completo: string;
+  };
+}
+
 @Component({
   selector: 'app-ordens-servico',
   templateUrl: './ordens-servico-simple.page.html',
@@ -72,6 +103,9 @@ interface Veiculo {
 export class OrdensServicoPage implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   
+  // Configurações do environment
+  environment = environment;
+  
   ordensServico: OrdemServico[] = [];
   filteredOrdens: OrdemServico[] = [];
   veiculos: Veiculo[] = [];
@@ -79,6 +113,12 @@ export class OrdensServicoPage implements OnInit, OnDestroy {
   loading = false;
   searchTerm = '';
   selectedStatus = '';
+  
+  // Modal properties
+  selectedOS: OrdemServico | null = null;
+  pecasUtilizadas: PecaUtilizada[] = [];
+  servicosRealizados: ServicoRealizado[] = [];
+  loadingModal = false;
   
   // Create OS form data
   showCreateForm = false;
@@ -469,134 +509,111 @@ export class OrdensServicoPage implements OnInit, OnDestroy {
   /**
    * View OS details
    */
-  viewOSDetails(os: OrdemServico) {
-    // For now, show alert with details
+  async viewOSDetails(os: OrdemServico) {
+    this.selectedOS = os;
+    await this.loadPecasEServicos(os.id);
     this.showOSDetailsModal(os);
   }
 
+
   /**
-   * Add services and parts to OS
+   * Load parts and services for OS
    */
-  addServicosPecas(os: OrdemServico, event: Event) {
-    event.stopPropagation(); // Previne que o clique propague para o card
-    this.showAddServicesModal(os);
+  async loadPecasEServicos(osId: number) {
+    this.loadingModal = true;
+    
+    try {
+      // Carregar peças utilizadas
+      await this.loadPecasUtilizadas(osId);
+      
+      // Carregar serviços realizados
+      await this.loadServicosRealizados(osId);
+    } catch (error) {
+      console.error('Erro ao carregar peças e serviços:', error);
+    } finally {
+      this.loadingModal = false;
+    }
+  }
+
+  /**
+   * Load used parts for OS
+   */
+  async loadPecasUtilizadas(osId: number) {
+    try {
+      const token = localStorage.getItem(environment.storage.token);
+      const options: any = {};
+      if (token) {
+        options.headers = { 'Authorization': `Bearer ${token}` };
+      }
+
+      const response: any = await this.http.get(
+        `${environment.apiUrl}${environment.endpoints.pecasUtilizadas}/os/${osId}/pecas`,
+        options
+      ).toPromise();
+
+      if (response.status === 'success' || response.success) {
+        this.pecasUtilizadas = response.data?.items || response.data || [];
+      } else {
+        this.pecasUtilizadas = [];
+      }
+    } catch (error) {
+      console.error('Erro ao carregar peças utilizadas:', error);
+      this.pecasUtilizadas = [];
+    }
+  }
+
+  /**
+   * Load performed services for OS
+   */
+  async loadServicosRealizados(osId: number) {
+    try {
+      const token = localStorage.getItem(environment.storage.token);
+      const options: any = {};
+      if (token) {
+        options.headers = { 'Authorization': `Bearer ${token}` };
+      }
+
+      const response: any = await this.http.get(
+        `${environment.apiUrl}${environment.endpoints.servicosRealizados}/os/${osId}/servicos`,
+        options
+      ).toPromise();
+
+      if (response.status === 'success' || response.success) {
+        this.servicosRealizados = response.data?.items || response.data || [];
+      } else {
+        this.servicosRealizados = [];
+      }
+    } catch (error) {
+      console.error('Erro ao carregar serviços realizados:', error);
+      this.servicosRealizados = [];
+    }
   }
 
   /**
    * Show OS details modal
    */
   async showOSDetailsModal(os: OrdemServico) {
-    let message = `
-Veículo: ${this.getVeiculoDisplayName(os.veiculo)}
-
-Data: ${this.formatDate(os.created_at)}
-
-Status: ${this.getStatusDisplayName(os.situacao_os)}
-
-Problema: ${os.problema_apresentado}
-
-Sistema: ${os.sistema_afetado}
-
-Tipo: ${this.getMaintenanceDisplayName(os.manutencao)}
-
-Hodômetro: ${os.hodometro} km`;
-
-    // Adiciona informações do mecânico se a OS estiver fechada
-    if (os.situacao_os === 'FECHADA') {
-      // Busca informações do encerramento da OS
-      const encerramentos = await this.getEncerramentoInfo(os.id);
-      if (encerramentos && encerramentos.length > 0) {
-        // Mostra todos os mecânicos que trabalharam na OS
-        const mecanicos = encerramentos.map(e => e.nome_mecanico || 'Não informado').join(', ');
-        message += `
-
-Mecânicos: ${mecanicos}`;
-        
-        // Mostra a data da manutenção do primeiro encerramento
-        if (encerramentos[0].data_da_manutencao) {
-          message += `
-
-Data da Manutenção: ${this.formatDate(encerramentos[0].data_da_manutencao)}`;
-        }
-        
-        // Mostra o tempo total do primeiro encerramento
-        if (encerramentos[0].tempo_total) {
-          message += `
-
-Tempo Total: ${encerramentos[0].tempo_total}`;
-        }
-      }
+    const modal = await this.modalController.create({
+      component: OSDetailsModalComponent,
+      componentProps: {
+        ordemServico: os,
+        pecasUtilizadas: this.pecasUtilizadas,
+        servicosRealizados: this.servicosRealizados,
+        loading: this.loadingModal
+      },
+      cssClass: 'os-details-modal'
+    });
+    
+    await modal.present();
+    
+    // Listen for modal dismissal to refresh the list if OS was closed or vehicle withdrawn
+    const { data } = await modal.onDidDismiss();
+    if (data && (data.osClosed || data.vehicleWithdrawn)) {
+      await this.loadOrdensServico();
     }
-
-    message = message.trim();
-
-    const alert = await this.alertController.create({
-      header: `OS #${os.id}`,
-      message: message,
-      buttons: ['Fechar'],
-      cssClass: 'os-details-alert'
-    });
-    await alert.present();
   }
 
-  /**
-   * Show add services modal
-   */
-  async showAddServicesModal(os: OrdemServico) {
-    const alert = await this.alertController.create({
-      header: `Adicionar à OS #${os.id}`,
-      message: 'Escolha o que deseja adicionar:',
-      buttons: [
-        {
-          text: 'Cancelar',
-          role: 'cancel'
-        },
-        {
-          text: 'Apenas Serviço',
-          handler: () => {
-            this.addServico(os);
-          }
-        },
-        {
-          text: 'Apenas Peça',
-          handler: () => {
-            this.addPeca(os);
-          }
-        },
-        {
-          text: 'Serviço + Peça',
-          handler: () => {
-            this.addServicoEPeca(os);
-          }
-        }
-      ]
-    });
-    await alert.present();
-  }
 
-  /**
-   * Add service only
-   */
-  addServico(os: OrdemServico) {
-    // TODO: Implementar adição de serviço
-    this.showErrorToast('Funcionalidade de adicionar serviço será implementada em breve');
-  }
-
-  /**
-   * Add part only
-   */
-  addPeca(os: OrdemServico) {
-    // TODO: Implementar adição de peça
-    this.showErrorToast('Funcionalidade de adicionar peça será implementada em breve');
-  }
-
-  /**
-   * Add service and part
-   */
-  addServicoEPeca(os: OrdemServico) {
-    // TODO: Implementar adição de serviço e peça
-    this.showErrorToast('Funcionalidade de adicionar serviço e peça será implementada em breve');
-  }
 
   /**
    * Get encerramento info for OS

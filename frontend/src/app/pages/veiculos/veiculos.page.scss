@@ -406,6 +406,139 @@ ion-fab {
   }
 }
 
+// Form Section
+.form-section {
+  margin-bottom: 24px;
+
+  .form-header {
+    margin-bottom: 20px;
+    text-align: center;
+
+    @media (min-width: 768px) {
+      text-align: left;
+    }
+
+    h1 {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--ion-color-dark);
+      margin: 0 0 8px 0;
+
+      @media (min-width: 768px) {
+        font-size: 28px;
+      }
+    }
+
+    p {
+      font-size: 14px;
+      color: var(--ion-color-medium);
+      margin: 0;
+
+      @media (min-width: 768px) {
+        font-size: 16px;
+      }
+    }
+  }
+
+  .vehicle-form {
+    .form-card {
+      --background: var(--ion-color-light);
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-section-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 24px 0 16px 0;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--ion-color-primary-tint);
+
+      &:first-child {
+        margin-top: 0;
+      }
+
+      ion-icon {
+        font-size: 20px;
+        color: var(--ion-color-primary);
+      }
+
+      h3 {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--ion-color-dark);
+        margin: 0;
+      }
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+
+      @media (min-width: 768px) {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .form-group {
+      ion-item {
+        --background: var(--ion-color-light);
+        --border-radius: 8px;
+        --border-width: 1px;
+        --border-color: var(--ion-color-medium);
+        --padding-start: 12px;
+        --padding-end: 12px;
+        --min-height: 56px;
+
+        &.item-has-focus {
+          --border-color: var(--ion-color-primary);
+          --border-width: 2px;
+        }
+
+        ion-label {
+          font-weight: 500;
+          color: var(--ion-color-dark);
+        }
+
+        ion-input,
+        ion-select,
+        ion-textarea {
+          --color: var(--ion-color-dark);
+        }
+      }
+    }
+
+    .form-actions {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-top: 24px;
+
+      @media (min-width: 768px) {
+        grid-template-columns: 1fr 1fr;
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      ion-button {
+        --border-radius: 8px;
+        --padding-top: 12px;
+        --padding-bottom: 12px;
+        font-weight: 600;
+        text-transform: none;
+
+        &[disabled] {
+          --opacity: 0.5;
+        }
+      }
+    }
+  }
+}
+
 // Dark theme support
 @media (prefers-color-scheme: dark) {
   .vehicle-card, .summary-card {
