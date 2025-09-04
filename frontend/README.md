@@ -173,14 +173,28 @@ ionic capacitor build ios
 ### 🔧 **Ordens de Serviço**
 - **Lista Paginada**: Com filtros e busca
 - **Criação/Edição**: Formulários responsivos
-- **Detalhes**: Visualização completa da OS
+- **Modal de Detalhes**: Visualização completa interativa
 - **Fluxo Completo**: Abertura → Execução → Encerramento → Retirada
+- **Fechamento de OS**: Formulário com dados do mecânico
+- **Retirada de Veículo**: Registro do responsável pela retirada
+- **Exportação PDF**: Relatório completo para OS retiradas
+- **Status Automático**: Atualização automática do veículo
 
 ### 🚗 **Veículos**
-- **Cadastro Completo**: Todas as informações
+- **Cadastro Completo**: Todas as informações do veículo
+- **Edição**: Formulário completo de atualização
 - **Busca Avançada**: Por placa, patrimônio, marca
-- **Status Control**: Ativo, manutenção, inativo
+- **Status Automático**: Ativo, manutenção (baseado na OS)
+- **Validação**: Placa no formato ABC-1234
 - **Histórico**: Manutenções anteriores
+
+### 🔩 **Peças e Serviços** (Mecânico+)
+- **Cadastro de Peças**: Com ficha e quantidade
+- **Registro de Serviços**: Com tempo de execução
+- **Filtro por OS**: Visualização por ordem específica
+- **Cálculo Automático**: Tempo total dos serviços
+- **Validação**: Quantidade numérica, tempo HH:MM
+- **Busca Avançada**: Por peça, serviço ou OS
 
 ### 👥 **Usuários** (Supervisor+)
 - **CRUD Completo**: Criar, editar, desativar
@@ -305,10 +319,19 @@ export const environment = {
 
 ## 🎯 Próximos Passos
 
+### 🔮 **Funcionalidades Implementadas**
+- [x] **Relatórios PDF**: Geração de documentos para OS retiradas
+- [x] **Modal de Detalhes**: Visualização completa de OS
+- [x] **Fechamento de OS**: Formulário com dados do mecânico
+- [x] **Retirada de Veículo**: Registro do responsável
+- [x] **Gestão de Peças**: Cadastro e listagem
+- [x] **Gestão de Serviços**: Registro com tempo
+- [x] **Status Automático**: Atualização do veículo
+- [x] **Validações Avançadas**: Campos com validação específica
+
 ### 🔮 **Funcionalidades Planejadas**
 - [ ] **Notificações Push**: Alertas em tempo real
 - [ ] **Chat Interno**: Comunicação entre usuários
-- [ ] **Relatórios PDF**: Geração de documentos
 - [ ] **Dashboard Analytics**: Gráficos avançados
 - [ ] **Multi-idioma**: Suporte a i18n
 - [ ] **Modo Offline**: Funcionalidade completa offline
