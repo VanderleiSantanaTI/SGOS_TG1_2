@@ -247,7 +247,7 @@ export class PecasServicosPage implements OnInit {
       abrir_os_id: this.ordemSelecionada.id,
       peca_utilizada: this.pecasForm.get('peca_utilizada')?.value,
       num_ficha: this.pecasForm.get('num_ficha')?.value,
-      qtd: this.pecasForm.get('qtd')?.value,
+      qtd: this.pecasForm.get('qtd')?.value.toString(),
       usuario_id: this.currentUser?.id
     };
 
