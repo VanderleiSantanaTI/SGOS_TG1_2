@@ -1,3 +1,300 @@
-.container { padding: 20px; text-align: center; margin-top: 50px; }
-h1 { color: var(--ion-color-primary); margin-bottom: 16px; }
-p { color: var(--ion-color-medium); }
+.container {
+  padding: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  
+  ion-spinner {
+    margin-bottom: 16px;
+  }
+  
+  p {
+    color: var(--ion-color-medium);
+    font-size: 16px;
+  }
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+// Seleção de Veículos
+.veiculos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.veiculo-card {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  &.selected {
+    border-color: var(--ion-color-primary);
+    background: var(--ion-color-primary-tint);
+  }
+}
+
+.veiculo-info {
+  h3 {
+    color: var(--ion-color-primary);
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
+  
+  p {
+    margin: 4px 0;
+    font-size: 14px;
+    
+    strong {
+      color: var(--ion-color-dark);
+    }
+  }
+}
+
+.action-section {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--ion-color-light);
+}
+
+// Relatório
+.relatorio-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.relatorio-header {
+  background: linear-gradient(135deg, var(--ion-color-primary), var(--ion-color-primary-shade));
+  color: white;
+  
+  ion-card-title {
+    color: white;
+  }
+  
+  ion-card-subtitle {
+    color: rgba(255, 255, 255, 0.8);
+  }
+}
+
+.relatorio-info {
+  p {
+    margin: 8px 0;
+    color: rgba(255, 255, 255, 0.9);
+  }
+}
+
+// Estatísticas
+.stats-card {
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+  }
+  
+  .stat-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: var(--ion-color-light);
+    border-radius: 8px;
+    text-align: left;
+    
+    ion-icon {
+      font-size: 24px;
+    }
+    
+    .stat-content {
+      h3 {
+        font-size: 24px;
+        font-weight: bold;
+        margin: 0;
+        color: var(--ion-color-dark);
+      }
+      
+      p {
+        font-size: 12px;
+        margin: 0;
+        color: var(--ion-color-medium);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+    }
+  }
+}
+
+// Ordens
+.ordens-card {
+  .accordion-content {
+    padding: 16px;
+  }
+  
+  .ordem-details {
+    margin-bottom: 20px;
+    padding: 16px;
+    background: var(--ion-color-light);
+    border-radius: 8px;
+    
+    h4 {
+      color: var(--ion-color-primary);
+      margin-bottom: 12px;
+      font-size: 16px;
+    }
+    
+    p {
+      margin: 6px 0;
+      font-size: 14px;
+      
+      strong {
+        color: var(--ion-color-dark);
+      }
+    }
+  }
+  
+  .pecas-section, .servicos-section {
+    margin-bottom: 20px;
+    
+    h4 {
+      color: var(--ion-color-secondary);
+      margin-bottom: 12px;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    ion-list {
+      background: transparent;
+      
+      ion-item {
+        --background: var(--ion-color-light);
+        --border-radius: 8px;
+        margin-bottom: 8px;
+        
+        ion-label {
+          h3 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+          }
+          
+          p {
+            font-size: 12px;
+            color: var(--ion-color-medium);
+            margin: 2px 0;
+          }
+        }
+      }
+    }
+  }
+  
+  .no-items {
+    text-align: center;
+    padding: 20px;
+    color: var(--ion-color-medium);
+    
+    ion-icon {
+      font-size: 48px;
+      margin-bottom: 8px;
+    }
+    
+    p {
+      font-size: 14px;
+    }
+  }
+}
+
+.no-orders-card {
+  .no-data {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--ion-color-medium);
+    
+    ion-icon {
+      font-size: 64px;
+      margin-bottom: 16px;
+    }
+    
+    h3 {
+      font-size: 18px;
+      margin-bottom: 8px;
+      color: var(--ion-color-dark);
+    }
+    
+    p {
+      font-size: 14px;
+    }
+  }
+}
+
+// Botões de Ação
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+// Estados vazios
+.no-data {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--ion-color-medium);
+  
+  ion-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+  }
+  
+  p {
+    font-size: 16px;
+  }
+}
+
+// Responsividade
+@media (max-width: 768px) {
+  .veiculos-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .container {
+    padding: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .veiculo-info h3 {
+    font-size: 16px;
+  }
+  
+  .stat-item {
+    padding: 12px;
+    
+    .stat-content h3 {
+      font-size: 20px;
+    }
+  }
+}

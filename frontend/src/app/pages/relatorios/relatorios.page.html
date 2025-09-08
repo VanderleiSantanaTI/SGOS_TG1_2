@@ -9,7 +9,239 @@
 
 <ion-content [fullscreen]="true">
   <div class="container">
-    <h1>Relatórios</h1>
-    <p>Esta página será implementada em breve.</p>
+    <!-- Loading -->
+    <div *ngIf="loading" class="loading-container">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Carregando...</p>
+    </div>
+
+    <!-- Conteúdo Principal -->
+    <div *ngIf="!loading" class="content">
+      <!-- Seleção de Veículo -->
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon name="car-outline"></ion-icon>
+            Relatório por Veículo
+          </ion-card-title>
+          <ion-card-subtitle>
+            Selecione um veículo para gerar um relatório completo
+          </ion-card-subtitle>
+        </ion-card-header>
+        <ion-card-content>
+          <div *ngIf="veiculos.length === 0" class="no-data">
+            <ion-icon name="information-circle-outline"></ion-icon>
+            <p>Nenhum veículo encontrado.</p>
+          </div>
+
+          <div *ngIf="veiculos.length > 0" class="veiculos-grid">
+            <ion-card 
+              *ngFor="let veiculo of veiculos" 
+              class="veiculo-card"
+              [class.selected]="veiculoSelecionado?.id === veiculo.id"
+              (click)="selecionarVeiculo(veiculo)">
+              <ion-card-content>
+                <div class="veiculo-info">
+                  <h3>{{ veiculo.placa }}</h3>
+                  <p><strong>Marca:</strong> {{ veiculo.marca }}</p>
+                  <p><strong>Modelo:</strong> {{ veiculo.modelo }}</p>
+                  <p><strong>Ano:</strong> {{ veiculo.ano }}</p>
+                  <p><strong>Status:</strong> 
+                    <ion-badge [color]="veiculo.status === 'ATIVO' ? 'success' : 'warning'">
+                      {{ veiculo.status }}
+                    </ion-badge>
+                  </p>
+                </div>
+              </ion-card-content>
+            </ion-card>
+          </div>
+
+          <!-- Botão para Gerar Relatório -->
+          <div *ngIf="veiculoSelecionado" class="action-section">
+            <ion-button 
+              expand="block" 
+              color="primary" 
+              (click)="gerarRelatorioVeiculo()"
+              [disabled]="loading">
+              <ion-icon name="document-text-outline" slot="start"></ion-icon>
+              Gerar Relatório do Veículo
+            </ion-button>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Relatório Gerado -->
+      <div *ngIf="showRelatorio && relatorio" class="relatorio-section">
+        <!-- Cabeçalho do Relatório -->
+        <ion-card class="relatorio-header">
+          <ion-card-header>
+            <ion-card-title>
+              <ion-icon name="document-outline"></ion-icon>
+              Relatório Completo
+            </ion-card-title>
+            <ion-card-subtitle>
+              {{ relatorio.veiculo.placa }} - {{ relatorio.veiculo.marca }} {{ relatorio.veiculo.modelo }}
+            </ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            <div class="relatorio-info">
+              <p><strong>Período:</strong> {{ relatorio.periodo }}</p>
+              <p><strong>Status:</strong> 
+                <ion-badge [color]="relatorio.veiculo.status === 'ATIVO' ? 'success' : 'warning'">
+                  {{ relatorio.veiculo.status }}
+                </ion-badge>
+              </p>
+            </div>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- Resumo Estatístico -->
+        <ion-card class="stats-card">
+          <ion-card-header>
+            <ion-card-title>
+              <ion-icon name="stats-chart-outline"></ion-icon>
+              Resumo Estatístico
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <div class="stats-grid">
+              <div class="stat-item">
+                <ion-icon name="construct-outline" color="primary"></ion-icon>
+                <div class="stat-content">
+                  <h3>{{ relatorio.totalOrdens }}</h3>
+                  <p>Ordens de Serviço</p>
+                </div>
+              </div>
+              
+              <div class="stat-item">
+                <ion-icon name="hardware-chip-outline" color="secondary"></ion-icon>
+                <div class="stat-content">
+                  <h3>{{ relatorio.totalPecas }}</h3>
+                  <p>Peças Utilizadas</p>
+                </div>
+              </div>
+              
+              <div class="stat-item">
+                <ion-icon name="build-outline" color="tertiary"></ion-icon>
+                <div class="stat-content">
+                  <h3>{{ relatorio.totalServicos }}</h3>
+                  <p>Serviços Realizados</p>
+                </div>
+              </div>
+            </div>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- Detalhamento das Ordens -->
+        <ion-card *ngIf="relatorio.ordensServico.length > 0" class="ordens-card">
+          <ion-card-header>
+            <ion-card-title>
+              <ion-icon name="list-outline"></ion-icon>
+              Detalhamento das Ordens de Serviço
+            </ion-card-title>
+            <ion-card-subtitle>
+              {{ relatorio.ordensServico.length }} ordem(ns) encontrada(s)
+            </ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-accordion-group>
+              <ion-accordion *ngFor="let ordem of relatorio.ordensServico; let i = index" [value]="'ordem-' + i">
+                <ion-item slot="header" color="light">
+                  <ion-label>
+                    <h2>OS #{{ ordem.id }} - {{ ordem.data }}</h2>
+                    <p>{{ ordem.problema_apresentado }}</p>
+                    <p>
+                      <ion-badge [color]="ordem.situacao_os === 'FECHADA' ? 'success' : 'warning'">
+                        {{ ordem.situacao_os }}
+                      </ion-badge>
+                    </p>
+                  </ion-label>
+                </ion-item>
+                
+                <div class="accordion-content" slot="content">
+                  <!-- Detalhes da Ordem -->
+                  <div class="ordem-details">
+                    <h4>Detalhes da Ordem</h4>
+                    <p><strong>Sistema Afetado:</strong> {{ ordem.sistema_afetado }}</p>
+                    <p><strong>Causa da Avaria:</strong> {{ ordem.causa_da_avaria }}</p>
+                    <p><strong>Manutenção:</strong> {{ ordem.manutencao }}</p>
+                    <p><strong>Hodômetro:</strong> {{ ordem.hodometro }}</p>
+                    <p><strong>Criada em:</strong> {{ ordem.created_at | date:'dd/MM/yyyy HH:mm' }}</p>
+                  </div>
+
+                  <!-- Peças Utilizadas -->
+                  <div class="pecas-section" *ngIf="ordem.pecas && ordem.pecas.length > 0">
+                    <h4>Peças Utilizadas ({{ ordem.pecas.length }})</h4>
+                    <ion-list>
+                      <ion-item *ngFor="let peca of ordem.pecas">
+                        <ion-icon name="hardware-chip-outline" slot="start" color="secondary"></ion-icon>
+                        <ion-label>
+                          <h3>{{ peca.peca_utilizada }}</h3>
+                          <p>Ficha: {{ peca.num_ficha }} | Qtd: {{ peca.qtd }}</p>
+                          <p>Adicionado em: {{ peca.created_at | date:'dd/MM/yyyy HH:mm' }}</p>
+                        </ion-label>
+                      </ion-item>
+                    </ion-list>
+                  </div>
+
+                  <!-- Serviços Realizados -->
+                  <div class="servicos-section" *ngIf="ordem.servicos && ordem.servicos.length > 0">
+                    <h4>Serviços Realizados ({{ ordem.servicos.length }})</h4>
+                    <ion-list>
+                      <ion-item *ngFor="let servico of ordem.servicos">
+                        <ion-icon name="build-outline" slot="start" color="tertiary"></ion-icon>
+                        <ion-label>
+                          <h3>{{ servico.servico_realizado }}</h3>
+                          <p>Tempo: {{ servico.tempo_de_servico_realizado }}</p>
+                          <p>Realizado em: {{ servico.created_at | date:'dd/MM/yyyy HH:mm' }}</p>
+                        </ion-label>
+                      </ion-item>
+                    </ion-list>
+                  </div>
+
+                  <!-- Mensagem quando não há peças ou serviços -->
+                  <div *ngIf="(!ordem.pecas || ordem.pecas.length === 0) && (!ordem.servicos || ordem.servicos.length === 0)" class="no-items">
+                    <ion-icon name="information-circle-outline"></ion-icon>
+                    <p>Nenhuma peça ou serviço registrado para esta ordem.</p>
+                  </div>
+                </div>
+              </ion-accordion>
+            </ion-accordion-group>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- Mensagem quando não há ordens -->
+        <ion-card *ngIf="relatorio.ordensServico.length === 0" class="no-orders-card">
+          <ion-card-content>
+            <div class="no-data">
+              <ion-icon name="information-circle-outline"></ion-icon>
+              <h3>Nenhuma Ordem Encontrada</h3>
+              <p>Este veículo não possui ordens de serviço registradas.</p>
+            </div>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- Botões de Ação -->
+        <div class="action-buttons">
+          <ion-button 
+            expand="block" 
+            fill="outline" 
+            color="primary"
+            (click)="exportarRelatorio()">
+            <ion-icon name="download-outline" slot="start"></ion-icon>
+            Exportar Relatório
+          </ion-button>
+          
+          <ion-button 
+            expand="block" 
+            fill="clear" 
+            color="medium"
+            (click)="showRelatorio = false; relatorio = null">
+            <ion-icon name="close-outline" slot="start"></ion-icon>
+            Fechar Relatório
+          </ion-button>
+        </div>
+      </div>
+    </div>
   </div>
 </ion-content>
