@@ -45,7 +45,7 @@
                   <h3>{{ veiculo.placa }}</h3>
                   <p><strong>Marca:</strong> {{ veiculo.marca }}</p>
                   <p><strong>Modelo:</strong> {{ veiculo.modelo }}</p>
-                  <p><strong>Ano:</strong> {{ veiculo.ano }}</p>
+                  <p><strong>Ano:</strong> {{ veiculo.ano_fabricacao }}</p>
                   <p><strong>Status:</strong> 
                     <ion-badge [color]="veiculo.status === 'ATIVO' ? 'success' : 'warning'">
                       {{ veiculo.status }}
@@ -223,14 +223,25 @@
 
         <!-- Botões de Ação -->
         <div class="action-buttons">
-          <ion-button 
-            expand="block" 
-            fill="outline" 
-            color="primary"
-            (click)="exportarRelatorio()">
-            <ion-icon name="download-outline" slot="start"></ion-icon>
-            Exportar Relatório
-          </ion-button>
+          <div class="export-buttons">
+            <ion-button 
+              expand="block" 
+              fill="solid" 
+              color="primary"
+              (click)="exportarRelatorio()">
+              <ion-icon name="document-text-outline" slot="start"></ion-icon>
+              Exportar PDF
+            </ion-button>
+            
+            <ion-button 
+              expand="block" 
+              fill="outline" 
+              color="secondary"
+              (click)="exportarRelatorioTXT()">
+              <ion-icon name="document-outline" slot="start"></ion-icon>
+              Exportar TXT
+            </ion-button>
+          </div>
           
           <ion-button 
             expand="block" 

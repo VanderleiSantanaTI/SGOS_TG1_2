@@ -32,6 +32,7 @@ wheels/
 .installed.cfg
 *.egg
 
+
 # Virtual Environment
 venv/
 env/
@@ -59,6 +60,7 @@ Thumbs.db
 *.temp
 *.bak
 *.backup
+
 
 # Arquivos de configuração local
 config_local.py

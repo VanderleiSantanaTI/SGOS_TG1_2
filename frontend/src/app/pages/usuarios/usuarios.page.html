@@ -4,12 +4,223 @@
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
     <ion-title>Usuários</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openCreateModal()" fill="solid" color="primary">
+        <ion-icon name="add" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
   <div class="container">
-    <h1>Usuários</h1>
-    <p>Esta página será implementada em breve.</p>
+    <!-- Header Section -->
+    <div class="header-section">
+      <h1>Gerenciamento de Usuários</h1>
+      <p>Gerencie usuários do sistema, permissões e acessos</p>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="search-section">
+      <ion-searchbar
+        [(ngModel)]="searchTerm"
+        (ionInput)="onSearchChange()"
+        placeholder="Buscar usuários..."
+        show-clear-button="focus"
+        debounce="300">
+      </ion-searchbar>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="loading-container">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Carregando usuários...</p>
+    </div>
+
+    <!-- Users List -->
+    <div *ngIf="!loading" class="users-container">
+      <div *ngIf="usuarios.length === 0" class="empty-state">
+        <ion-icon name="people-outline" size="large"></ion-icon>
+        <h3>Nenhum usuário encontrado</h3>
+        <p>Comece criando um novo usuário</p>
+        <ion-button (click)="openCreateModal()" fill="solid" color="primary">
+          <ion-icon name="add" slot="start"></ion-icon>
+          Criar Usuário
+        </ion-button>
+      </div>
+
+      <div *ngIf="usuarios.length > 0" class="users-list">
+        <ion-card *ngFor="let usuario of usuarios" class="user-card">
+          <ion-card-content>
+            <div class="user-header">
+              <div class="user-info">
+                <h2>{{ usuario.nome_completo }}</h2>
+                <p class="username">@{{ usuario.username }}</p>
+                <p class="email">{{ usuario.email }}</p>
+              </div>
+              <div class="user-actions">
+                <ion-chip [color]="getPerfilColor(usuario.perfil)" class="perfil-chip">
+                  {{ getPerfilLabel(usuario.perfil) }}
+                </ion-chip>
+                <ion-toggle
+                  [checked]="usuario.ativo"
+                  (ionChange)="toggleUsuarioStatus(usuario)"
+                  color="success">
+                </ion-toggle>
+              </div>
+            </div>
+
+            <div class="user-details">
+              <div class="detail-item">
+                <ion-icon name="person-outline"></ion-icon>
+                <span>{{ getPerfilLabel(usuario.perfil) }}</span>
+              </div>
+              <div class="detail-item">
+                <ion-icon name="calendar-outline"></ion-icon>
+                <span>{{ usuario.created_at | date:'dd/MM/yyyy' }}</span>
+              </div>
+              <div class="detail-item">
+                <ion-icon [name]="usuario.ativo ? 'checkmark-circle' : 'close-circle'" 
+                         [color]="usuario.ativo ? 'success' : 'danger'"></ion-icon>
+                <span>{{ usuario.ativo ? 'Ativo' : 'Inativo' }}</span>
+              </div>
+            </div>
+
+            <div class="user-actions-buttons">
+              <ion-button 
+                (click)="openEditModal(usuario)" 
+                fill="outline" 
+                color="primary" 
+                size="small">
+                <ion-icon name="create-outline" slot="start"></ion-icon>
+                Editar
+              </ion-button>
+              <ion-button 
+                (click)="deleteUsuario(usuario)" 
+                fill="outline" 
+                color="danger" 
+                size="small">
+                <ion-icon name="trash-outline" slot="start"></ion-icon>
+                Excluir
+              </ion-button>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </div>
+
+      <!-- Pagination -->
+      <div *ngIf="usuarios.length > 0" class="pagination">
+        <ion-button 
+          (click)="previousPage()" 
+          [disabled]="currentPage === 1"
+          fill="outline" 
+          size="small">
+          <ion-icon name="chevron-back" slot="start"></ion-icon>
+          Anterior
+        </ion-button>
+        
+        <span class="page-info">
+          Página {{ currentPage }} de {{ totalPages }}
+        </span>
+        
+        <ion-button 
+          (click)="nextPage()" 
+          [disabled]="currentPage === totalPages"
+          fill="outline" 
+          size="small">
+          Próxima
+          <ion-icon name="chevron-forward" slot="end"></ion-icon>
+        </ion-button>
+      </div>
+    </div>
   </div>
+
+  <!-- User Modal -->
+  <ion-modal #usuarioModal [isOpen]="isModalOpen" (didDismiss)="closeModal()">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>{{ isEditing ? 'Editar Usuário' : 'Novo Usuário' }}</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="closeModal()">
+              <ion-icon name="close" slot="icon-only"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+
+      <ion-content>
+        <form [formGroup]="usuarioForm" (ngSubmit)="saveUsuario()">
+          <div class="form-container">
+            <ion-item>
+              <ion-label position="stacked">Nome Completo *</ion-label>
+              <ion-input 
+                formControlName="nome_completo" 
+                placeholder="Digite o nome completo">
+              </ion-input>
+            </ion-item>
+
+            <ion-item>
+              <ion-label position="stacked">Username *</ion-label>
+              <ion-input 
+                formControlName="username" 
+                placeholder="Digite o username">
+              </ion-input>
+            </ion-item>
+
+            <ion-item>
+              <ion-label position="stacked">Email *</ion-label>
+              <ion-input 
+                formControlName="email" 
+                type="email" 
+                placeholder="Digite o email">
+              </ion-input>
+            </ion-item>
+
+            <ion-item>
+              <ion-label position="stacked">Perfil *</ion-label>
+              <ion-select formControlName="perfil" placeholder="Selecione o perfil">
+                <ion-select-option 
+                  *ngFor="let option of perfilOptions" 
+                  [value]="option.value">
+                  {{ option.label }}
+                </ion-select-option>
+              </ion-select>
+            </ion-item>
+
+            <ion-item>
+              <ion-label position="stacked">Senha {{ isEditing ? '(deixe em branco para manter a atual)' : '*' }}</ion-label>
+              <ion-input 
+                formControlName="password" 
+                type="password" 
+                placeholder="Digite a senha">
+              </ion-input>
+            </ion-item>
+
+            <ion-item>
+              <ion-label>Usuário Ativo</ion-label>
+              <ion-toggle formControlName="ativo" slot="end"></ion-toggle>
+            </ion-item>
+
+            <div class="form-actions">
+              <ion-button 
+                type="button" 
+                (click)="closeModal()" 
+                fill="outline" 
+                color="medium">
+                Cancelar
+              </ion-button>
+              <ion-button 
+                type="submit" 
+                [disabled]="usuarioForm.invalid"
+                fill="solid" 
+                color="primary">
+                {{ isEditing ? 'Atualizar' : 'Criar' }}
+              </ion-button>
+            </div>
+          </div>
+        </form>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
 </ion-content>
