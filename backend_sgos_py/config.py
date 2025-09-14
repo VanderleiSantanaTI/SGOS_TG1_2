@@ -17,11 +17,12 @@ class Settings(BaseSettings):
     enable_token_validation: bool = True
     
     # Email Configuration
-    mail_username: str = "your_email@gmail.com"
-    mail_password: str = "your_app_password"
-    mail_from: str = "your_email@gmail.com"
-    mail_port: int = 587
-    mail_server: str = "smtp.gmail.com"
+    mail_username: str = "atech@sgos.cloud"
+    mail_password: str = "@Vsa.999393"
+    mail_from: str = "vsatech@sgo.cloud"
+    mail_port: int = 46
+    mail_use_tls: bool = False
+    mail_server: str = "smtp.h.com"
     mail_from_name: str = "SGOS - Sistema de Gerenciamento"
     
     # Password Reset

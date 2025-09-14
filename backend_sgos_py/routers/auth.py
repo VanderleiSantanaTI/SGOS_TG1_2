@@ -77,6 +77,23 @@ async def login_form(
     except Exception as e:
         return create_error_response(f"Erro interno do servidor: {str(e)}")
 
+@router.post("/check-email")
+async def check_email_exists(
+    email_request: PasswordResetRequest,
+    db: Session = Depends(get_db)
+):
+    """Verifica se o email existe na base de dados"""
+    try:
+        usuario = db.query(Usuario).filter(Usuario.email == email_request.email).first()
+        
+        if usuario:
+            return create_success_response("Email encontrado", {"exists": True})
+        else:
+            return create_success_response("Email não encontrado", {"exists": False})
+        
+    except Exception as e:
+        return create_error_response(f"Erro interno do servidor: {str(e)}")
+
 @router.post("/forgot-password")
 async def forgot_password(
     reset_request: PasswordResetRequest,
@@ -84,12 +101,22 @@ async def forgot_password(
 ):
     """Solicita recuperação de senha via email"""
     try:
+        # Verificar se o email existe primeiro
+        usuario = db.query(Usuario).filter(Usuario.email == reset_request.email).first()
+        if not usuario:
+            return create_validation_error_response(
+                ["Email não encontrado em nossa base de dados"],
+                "Email não cadastrado"
+            )
+        
         success = await process_password_reset_request(db, reset_request.email)
         
-        # Por segurança, sempre retornamos sucesso mesmo se o email não existir
-        return create_success_response(
-            "Se o email estiver cadastrado em nossa base, você receberá um código de recuperação em breve."
-        )
+        if success:
+            return create_success_response(
+                "Código de recuperação enviado para seu email com sucesso!"
+            )
+        else:
+            return create_error_response("Erro ao enviar código de recuperação")
         
     except Exception as e:
         return create_error_response(f"Erro interno do servidor: {str(e)}")

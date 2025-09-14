@@ -62,11 +62,6 @@
                 <ion-chip [color]="getPerfilColor(usuario.perfil)" class="perfil-chip">
                   {{ getPerfilLabel(usuario.perfil) }}
                 </ion-chip>
-                <ion-toggle
-                  [checked]="usuario.ativo"
-                  (ionChange)="toggleUsuarioStatus(usuario)"
-                  color="success">
-                </ion-toggle>
               </div>
             </div>
 
@@ -99,7 +94,8 @@
                 (click)="deleteUsuario(usuario)" 
                 fill="outline" 
                 color="danger" 
-                size="small">
+                size="small"
+                [disabled]="isSameUser(usuario)">
                 <ion-icon name="trash-outline" slot="start"></ion-icon>
                 Excluir
               </ion-button>
@@ -189,7 +185,9 @@
             </ion-item>
 
             <ion-item>
-              <ion-label position="stacked">Senha {{ isEditing ? '(deixe em branco para manter a atual)' : '*' }}</ion-label>
+              <ion-label position="stacked">
+                Senha {{ isEditing ? '(deixe em branco para manter a atual)' : '*' }}
+              </ion-label>
               <ion-input 
                 formControlName="password" 
                 type="password" 
@@ -197,10 +195,31 @@
               </ion-input>
             </ion-item>
 
-            <ion-item>
-              <ion-label>Usuário Ativo</ion-label>
-              <ion-toggle formControlName="ativo" slot="end"></ion-toggle>
-            </ion-item>
+            <!-- Toggle Ativo / Inativo: REMOVIDO para o próprio usuário -->
+            <!-- Se NÃO for o próprio usuário: mostra o toggle (criar/editar outros) -->
+            <ng-container *ngIf="!isSameUser(currentUsuario); else selfStatus">
+              <ion-item>
+                <ion-label>Usuário Ativo</ion-label>
+                <ion-toggle formControlName="ativo" slot="end"></ion-toggle>
+              </ion-item>
+            </ng-container>
+
+            <!-- Template exibido quando o usuário está editando a si mesmo -->
+            <ng-template #selfStatus>
+              <ion-item>
+                <ion-label>
+                  Usuário Ativo
+                  <div class="warning-text" style="margin-top:4px;">
+                    <ion-icon name="warning-outline" color="warning"></ion-icon>
+                    Você não pode desativar a si mesmo
+                  </div>
+                </ion-label>
+                <div slot="end" class="status-end">
+                  <ion-icon [name]="usuarioForm.value.ativo ? 'checkmark-circle' : 'close-circle'"
+                            [color]="usuarioForm.value.ativo ? 'success' : 'danger'"></ion-icon>
+                </div>
+              </ion-item>
+            </ng-template>
 
             <div class="form-actions">
               <ion-button 

@@ -65,3 +65,4 @@ Thumbs.db
 # Arquivos de configuração local
 config_local.py
 settings_local.py
+create_env.py

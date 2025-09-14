@@ -11,11 +11,11 @@ def create_env_file():
     
     env_content = """# Configurações de Email
 # Substitua pelos seus dados reais do Gmail
-MAIL_USERNAME=seu_email@gmail.com
-MAIL_PASSWORD=sua_senha_de_app_gerada
-MAIL_FROM=seu_email@gmail.com
-MAIL_PORT=587
-MAIL_SERVER=smtp.gmail.com
+MAIL_USERNAME=vsatech@sgos.cloud
+MAIL_PASSWORD=@Vsa.999393
+MAIL_FROM=vsatech@sgos.cloud
+MAIL_PORT=465
+MAIL_SERVER=smtp.hostinger.com
 MAIL_FROM_NAME=SGOS - Sistema de Gerenciamento
 
 # Configurações de Segurança

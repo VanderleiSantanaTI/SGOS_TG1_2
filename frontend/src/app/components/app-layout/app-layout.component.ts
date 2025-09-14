@@ -1,7 +1,8 @@
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, NavigationEnd } from '@angular/router';
 import { MenuController, Platform } from '@ionic/angular';
 import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
@@ -14,6 +15,7 @@ export class AppLayoutComponent implements OnInit, OnDestroy {
   isAuthenticated = false;
   isMobile = true;
   screenWidth = 0;
+  isLoginPage = false;
   private authSubscriptions: Subscription[] = [];
 
   menuItems = [
@@ -38,12 +40,29 @@ export class AppLayoutComponent implements OnInit, OnDestroy {
     
     // Force initial check of auth state
     this.checkInitialAuthState();
+    
+    // Check if current route is login
+    this.checkCurrentRoute();
+    
+    // Subscribe to route changes
+    this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe(() => {
+        this.checkCurrentRoute();
+      });
   }
 
   private checkInitialAuthState() {
     // Check if user is already authenticated
     this.isAuthenticated = this.authService.isAuthenticated();
     this.currentUser = this.authService.getCurrentUser();
+  }
+
+  private checkCurrentRoute() {
+    this.isLoginPage = this.router.url === '/login' || 
+                      this.router.url === '/' || 
+                      this.router.url === '/forgot-password' || 
+                      this.router.url === '/reset-password';
   }
 
   ngOnDestroy() {

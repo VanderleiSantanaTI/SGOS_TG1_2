@@ -78,6 +78,23 @@
     font-weight: 600;
     font-size: 16px;
   }
+
+  .forgot-password-section {
+    text-align: center;
+    margin-top: 8px;
+    margin-bottom: 0;
+
+    .forgot-password-button {
+      --color: var(--ion-color-primary);
+      --color-hover: var(--ion-color-primary-shade);
+      font-size: 14px;
+      text-decoration: none;
+      
+      &:hover {
+        --color: var(--ion-color-primary-shade);
+      }
+    }
+  }
 }
 
 .demo-section {
@@ -104,9 +121,7 @@
       grid-template-columns: 1fr 1fr;
       gap: 8px;
 
-      @media (min-width: 768px) {
-        grid-template-columns: repeat(4, 1fr);
-      }
+
 
       .demo-button {
         --border-color: rgba(255, 255, 255, 0.3);

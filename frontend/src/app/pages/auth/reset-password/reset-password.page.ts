@@ -59,13 +59,42 @@ export class ResetPasswordPage implements OnInit {
 
       try {
         const { token, password } = this.resetPasswordForm.value;
-        await this.authService.resetPassword(token, password).toPromise();
         
-        await this.showSuccessToast('Senha redefinida com sucesso!');
-        this.router.navigate(['/login']);
+        // Usar subscribe em vez de toPromise() para melhor tratamento de erro
+        this.authService.resetPassword(token, password).subscribe({
+          next: async (response: any) => {
+            // Verificar se a resposta é realmente de sucesso
+            if (response && (response.status === 'success' || response.success)) {
+              await this.showSuccessToast('Senha redefinida com sucesso!');
+              this.router.navigate(['/login']);
+            } else {
+              // Se não é sucesso, tratar como erro
+              const errorMessage = response?.message || 'Erro ao redefinir senha';
+              await this.showErrorToast(errorMessage);
+            }
+          },
+          error: async (error: any) => {
+            console.error('Erro na redefinição de senha:', error);
+            let errorMessage = 'Erro ao redefinir senha';
+            
+            // Extrair mensagem de erro da resposta
+            if (error?.error?.message) {
+              errorMessage = error.error.message;
+            } else if (error?.message) {
+              errorMessage = error.message;
+            }
+            
+            await this.showErrorToast(errorMessage);
+          },
+          complete: () => {
+            this.loading = false;
+            loading.dismiss();
+          }
+        });
+        
       } catch (error: any) {
-        await this.showErrorToast(error.message || 'Erro ao redefinir senha');
-      } finally {
+        console.error('Erro inesperado:', error);
+        await this.showErrorToast('Erro inesperado ao redefinir senha');
         this.loading = false;
         await loading.dismiss();
       }
@@ -81,7 +110,15 @@ export class ResetPasswordPage implements OnInit {
   }
 
   goToLogin() {
-    this.router.navigate(['/login']);
+    console.log('Navegando para login...');
+    // Forçar navegação para a rota raiz que redireciona para login
+    this.router.navigateByUrl('/').then(() => {
+      console.log('Navegação para login concluída');
+    }).catch(error => {
+      console.error('Erro ao navegar para login:', error);
+      // Fallback: tentar navegar diretamente para /login
+      this.router.navigate(['/login']);
+    });
   }
 
   private async showSuccessToast(message: string) {

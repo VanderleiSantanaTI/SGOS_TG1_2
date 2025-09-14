@@ -146,6 +146,14 @@ export class AuthService {
   }
 
   /**
+   * Check if email exists
+   */
+  checkEmailExists(email: string): Observable<ApiResponse> {
+    const request: PasswordResetRequest = { email };
+    return this.apiService.post<ApiResponse>('/auth/check-email', request);
+  }
+
+  /**
    * Request password reset
    */
   requestPasswordReset(email: string): Observable<ApiResponse> {

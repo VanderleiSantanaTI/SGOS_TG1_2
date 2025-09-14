@@ -58,52 +58,28 @@ export class UsuarioService {
   /**
    * Create new user
    */
-  createUsuario(userData: UsuarioCreate): Observable<Usuario> {
-    return this.apiService.post<ApiResponse<Usuario>>(this.endpoint, userData)
-      .pipe(
-        map(response => {
-          if (response.success && response.data) {
-            return response.data;
-          }
-          throw new Error(response.message || 'Erro ao criar usuário');
-        })
-      );
+  createUsuario(userData: UsuarioCreate): Observable<ApiResponse<Usuario>> {
+    return this.apiService.post<ApiResponse<Usuario>>(this.endpoint, userData);
   }
 
   /**
    * Update user
    */
-  updateUsuario(id: number, userData: UsuarioUpdate): Observable<Usuario> {
-    return this.apiService.put<ApiResponse<Usuario>>(`${this.endpoint}/${id}`, userData)
-      .pipe(
-        map(response => {
-          if (response.success && response.data) {
-            return response.data;
-          }
-          throw new Error(response.message || 'Erro ao atualizar usuário');
-        })
-      );
+  updateUsuario(id: number, userData: UsuarioUpdate): Observable<ApiResponse<Usuario>> {
+    return this.apiService.put<ApiResponse<Usuario>>(`${this.endpoint}/${id}`, userData);
   }
 
   /**
    * Delete user
    */
-  deleteUsuario(id: number): Observable<boolean> {
-    return this.apiService.delete<ApiResponse>(`${this.endpoint}/${id}`)
-      .pipe(
-        map(response => {
-          if (response.success) {
-            return true;
-          }
-          throw new Error(response.message || 'Erro ao deletar usuário');
-        })
-      );
+  deleteUsuario(id: number): Observable<ApiResponse> {
+    return this.apiService.delete<ApiResponse>(`${this.endpoint}/${id}`);
   }
 
   /**
    * Toggle user active status
    */
-  toggleUsuarioStatus(id: number): Observable<Usuario> {
+  toggleUsuarioStatus(id: number): Observable<ApiResponse<Usuario>> {
     return this.getUsuario(id).pipe(
       switchMap(usuario => {
         const updateData: UsuarioUpdate = {

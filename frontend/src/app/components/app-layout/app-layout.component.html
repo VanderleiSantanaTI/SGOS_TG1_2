@@ -1,6 +1,6 @@
 <ion-app>
   <!-- DESKTOP HEADER (>= 768px) -->
-  <div class="desktop-header" *ngIf="!isMobile && isAuthenticated">
+  <div class="desktop-header" *ngIf="!isMobile && isAuthenticated && !isLoginPage">
     <div class="header-content">
       <!-- Brand -->
       <div class="brand" (click)="navigateTo('/dashboard')">
@@ -40,7 +40,7 @@
   <ion-menu 
     contentId="main-content" 
     type="overlay" 
-    [disabled]="!isAuthenticated || !isMobile">
+    [disabled]="!isAuthenticated || !isMobile || isLoginPage">
     
     <ion-header>
       <ion-toolbar color="primary">
@@ -87,10 +87,10 @@
   </ion-menu>
 
   <!-- MAIN CONTENT -->
-  <div class="main-content" [class.with-desktop-header]="!isMobile && isAuthenticated">
+  <div class="main-content" [class.with-desktop-header]="!isMobile && isAuthenticated && !isLoginPage">
     
     <!-- Mobile Header -->
-    <ion-header *ngIf="isMobile && isAuthenticated">
+    <ion-header *ngIf="isMobile && isAuthenticated && !isLoginPage">
       <ion-toolbar color="primary">
         <ion-buttons slot="start">
           <ion-menu-button></ion-menu-button>

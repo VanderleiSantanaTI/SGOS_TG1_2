@@ -2,6 +2,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { MenuController, ToastController, AlertController, LoadingController } from '@ionic/angular';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { UsuarioService } from '../../services/usuario.service';
+import { AuthService } from '../../services/auth.service';
 import { Usuario, UsuarioCreate, UsuarioUpdate } from '../../models/usuario.model';
 
 @Component({
@@ -34,6 +35,7 @@ export class UsuariosPage implements OnInit {
   constructor(
     private menuController: MenuController,
     private usuarioService: UsuarioService,
+    private authService: AuthService,
     private formBuilder: FormBuilder,
     private toastController: ToastController,
     private alertController: AlertController,
@@ -140,19 +142,73 @@ export class UsuariosPage implements OnInit {
         if (!formData.password) {
           delete formData.password;
         }
-        await this.usuarioService.updateUsuario(this.currentUsuario.id, formData).toPromise();
-        await this.showSuccessToast('Usuário atualizado com sucesso!');
+        
+        this.usuarioService.updateUsuario(this.currentUsuario.id, formData).subscribe({
+          next: async (response: any) => {
+            // Verificar se a resposta é realmente de sucesso
+            if (response && (response.status === 'success' || response.success)) {
+              await this.showSuccessToast('Usuário atualizado com sucesso!');
+              await this.closeModal();
+              await this.loadUsuarios();
+            } else {
+              // Se não é sucesso, tratar como erro
+              const errorMessage = response?.message || 'Erro ao atualizar usuário';
+              await this.showErrorToast(errorMessage);
+            }
+          },
+          error: async (error: any) => {
+            console.error('Erro ao atualizar usuário:', error);
+            let errorMessage = 'Erro ao atualizar usuário';
+            
+            // Extrair mensagem de erro da resposta
+            if (error?.error?.message) {
+              errorMessage = error.error.message;
+            } else if (error?.message) {
+              errorMessage = error.message;
+            }
+            
+            await this.showErrorToast(errorMessage);
+          },
+          complete: () => {
+            loading.dismiss();
+          }
+        });
       } else {
-        await this.usuarioService.createUsuario(formData).toPromise();
-        await this.showSuccessToast('Usuário criado com sucesso!');
+        // Criar novo usuário
+        this.usuarioService.createUsuario(formData).subscribe({
+          next: async (response: any) => {
+            // Verificar se a resposta é realmente de sucesso
+            if (response && (response.status === 'success' || response.success)) {
+              await this.showSuccessToast('Usuário criado com sucesso!');
+              await this.closeModal();
+              await this.loadUsuarios();
+            } else {
+              // Se não é sucesso, tratar como erro
+              const errorMessage = response?.message || 'Erro ao criar usuário';
+              await this.showErrorToast(errorMessage);
+            }
+          },
+          error: async (error: any) => {
+            console.error('Erro ao criar usuário:', error);
+            let errorMessage = 'Erro ao criar usuário';
+            
+            // Extrair mensagem de erro da resposta
+            if (error?.error?.message) {
+              errorMessage = error.error.message;
+            } else if (error?.message) {
+              errorMessage = error.message;
+            }
+            
+            await this.showErrorToast(errorMessage);
+          },
+          complete: () => {
+            loading.dismiss();
+          }
+        });
       }
-
-      await this.closeModal();
-      await this.loadUsuarios();
     } catch (error: any) {
-      console.error('Erro ao salvar usuário:', error);
-      await this.showErrorToast(error.message || 'Erro ao salvar usuário');
-    } finally {
+      console.error('Erro inesperado ao salvar usuário:', error);
+      await this.showErrorToast('Erro inesperado ao salvar usuário');
       await loading.dismiss();
     }
   }
@@ -175,13 +231,38 @@ export class UsuariosPage implements OnInit {
             await loading.present();
 
             try {
-              await this.usuarioService.deleteUsuario(usuario.id).toPromise();
-              await this.showSuccessToast('Usuário excluído com sucesso!');
-              await this.loadUsuarios();
+              this.usuarioService.deleteUsuario(usuario.id).subscribe({
+                next: async (response: any) => {
+                  // Verificar se a resposta é realmente de sucesso
+                  if (response && (response.status === 'success' || response.success)) {
+                    await this.showSuccessToast('Usuário excluído com sucesso!');
+                    await this.loadUsuarios();
+                  } else {
+                    // Se não é sucesso, tratar como erro
+                    const errorMessage = response?.message || 'Erro ao excluir usuário';
+                    await this.showErrorToast(errorMessage);
+                  }
+                },
+                error: async (error: any) => {
+                  console.error('Erro ao excluir usuário:', error);
+                  let errorMessage = 'Erro ao excluir usuário';
+                  
+                  // Extrair mensagem de erro da resposta
+                  if (error?.error?.message) {
+                    errorMessage = error.error.message;
+                  } else if (error?.message) {
+                    errorMessage = error.message;
+                  }
+                  
+                  await this.showErrorToast(errorMessage);
+                },
+                complete: () => {
+                  loading.dismiss();
+                }
+              });
             } catch (error: any) {
-              console.error('Erro ao excluir usuário:', error);
-              await this.showErrorToast(error.message || 'Erro ao excluir usuário');
-            } finally {
+              console.error('Erro inesperado ao excluir usuário:', error);
+              await this.showErrorToast('Erro inesperado ao excluir usuário');
               await loading.dismiss();
             }
           }
@@ -192,25 +273,6 @@ export class UsuariosPage implements OnInit {
     await alert.present();
   }
 
-  async toggleUsuarioStatus(usuario: Usuario) {
-    const loading = await this.loadingController.create({
-      message: usuario.ativo ? 'Desativando usuário...' : 'Ativando usuário...'
-    });
-    await loading.present();
-
-    try {
-      await this.usuarioService.toggleUsuarioStatus(usuario.id).toPromise();
-      await this.showSuccessToast(
-        usuario.ativo ? 'Usuário desativado com sucesso!' : 'Usuário ativado com sucesso!'
-      );
-      await this.loadUsuarios();
-    } catch (error: any) {
-      console.error('Erro ao alterar status do usuário:', error);
-      await this.showErrorToast(error.message || 'Erro ao alterar status do usuário');
-    } finally {
-      await loading.dismiss();
-    }
-  }
 
   getPerfilLabel(perfil: string): string {
     const option = this.perfilOptions.find(opt => opt.value === perfil);
@@ -244,9 +306,19 @@ export class UsuariosPage implements OnInit {
   async showSuccessToast(message: string) {
     const toast = await this.toastController.create({
       message,
-      duration: 2000,
+      duration: 3000,
       color: 'success',
-      position: 'top'
+      position: 'top',
+      cssClass: 'success-toast',
+      buttons: [
+        {
+          text: 'OK',
+          role: 'cancel',
+          handler: () => {
+            console.log('Toast dismissed');
+          }
+        }
+      ]
     });
     await toast.present();
   }
@@ -259,5 +331,28 @@ export class UsuariosPage implements OnInit {
       position: 'top'
     });
     await toast.present();
+  }
+
+  /**
+   * Verifica se o usuário atual é o mesmo que está sendo editado
+   */
+  isCurrentUser(): boolean {
+    const currentUser = this.authService.getCurrentUser();
+    console.log(currentUser);
+    console.log(this.currentUsuario);
+    console.log(currentUser?.id === this.currentUsuario?.id);
+    return !!(currentUser && this.currentUsuario && currentUser.id === this.currentUsuario.id);
+  }
+  
+  /**
+   * Verifica se o toggle de ativo deve estar desabilitado
+   */
+  isToggleDisabled(): boolean {
+    return this.isCurrentUser();
+  }
+
+  isSameUser(usuario: Usuario | null): boolean {
+    const currentUser = this.authService.getCurrentUser();
+    return !!(currentUser && usuario && currentUser.id === usuario.id);
   }
 }
