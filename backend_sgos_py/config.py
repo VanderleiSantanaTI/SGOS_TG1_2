@@ -17,9 +17,9 @@ class Settings(BaseSettings):
     enable_token_validation: bool = True
     
     # Email Configuration
-    mail_username: str = "atech@sgos.cloud"
-    mail_password: str = "@Vsa.999393"
-    mail_from: str = "vsatech@sgo.cloud"
+    mail_username: str = "valores@email.com"
+    mail_password: str = "@@@@"
+    mail_from: str = "valores@email.com"
     mail_port: int = 46
     mail_use_tls: bool = False
     mail_server: str = "smtp.h.com"
