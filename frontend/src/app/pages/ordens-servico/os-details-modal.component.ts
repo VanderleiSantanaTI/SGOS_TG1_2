@@ -530,11 +530,11 @@ interface ServicoRealizado {
       justify-content: center;
       height: 200px;
       
-      ion-spinner {
+      :is(ion-spinner) {
         margin-bottom: 16px;
       }
       
-      p {
+      :is(p) {
         color: var(--ion-color-medium);
         margin: 0;
       }
@@ -567,7 +567,7 @@ interface ServicoRealizado {
         text-transform: none;
         margin: 0;
         
-        ion-icon {
+        :is(ion-icon) {
           font-size: 20px;
           margin-right: 8px;
         }
@@ -581,7 +581,7 @@ interface ServicoRealizado {
         gap: 12px;
         margin-top: 24px;
 
-        ion-button {
+        :is(ion-button) {
           --border-radius: 8px;
           --padding-top: 12px;
           --padding-bottom: 12px;
@@ -594,7 +594,7 @@ interface ServicoRealizado {
         }
       }
 
-      ion-item {
+      :is(ion-item) {
         --background: var(--ion-color-light);
         --border-radius: 8px;
         --border-width: 1px;
@@ -609,7 +609,7 @@ interface ServicoRealizado {
           --border-width: 2px;
         }
 
-        ion-label {
+        :is(ion-label) {
           font-weight: 500;
           color: var(--ion-color-dark);
           
@@ -621,7 +621,7 @@ interface ServicoRealizado {
           }
         }
 
-        ion-input,
+        :is(ion-input),
         ion-datetime {
           --color: var(--ion-color-dark);
         }
@@ -635,7 +635,7 @@ interface ServicoRealizado {
         gap: 12px;
         margin-top: 24px;
 
-        ion-button {
+        :is(ion-button) {
           --border-radius: 8px;
           --padding-top: 12px;
           --padding-bottom: 12px;
@@ -648,7 +648,7 @@ interface ServicoRealizado {
         }
       }
 
-      ion-item {
+      :is(ion-item) {
         --background: var(--ion-color-light);
         --border-radius: 8px;
         --border-width: 1px;
@@ -663,12 +663,12 @@ interface ServicoRealizado {
           --border-width: 2px;
         }
 
-        ion-label {
+        :is(ion-label) {
           font-weight: 500;
           color: var(--ion-color-dark);
         }
 
-        ion-input,
+        :is(ion-input),
         ion-datetime {
           --color: var(--ion-color-dark);
         }
@@ -689,7 +689,7 @@ interface ServicoRealizado {
       background: var(--ion-color-light);
       border-radius: 8px;
       
-      ion-icon {
+      :is(ion-icon) {
         font-size: 20px;
         color: var(--ion-color-primary);
       }
@@ -721,12 +721,12 @@ interface ServicoRealizado {
       padding: 32px 16px;
       color: var(--ion-color-medium);
       
-      ion-icon {
+      :is(ion-icon) {
         font-size: 48px;
         margin-bottom: 16px;
       }
       
-      p {
+      :is(p) {
         margin: 0;
         font-size: 16px;
       }
@@ -738,23 +738,23 @@ interface ServicoRealizado {
         border-radius: 8px;
         --background: var(--ion-color-light);
         
-        ion-icon {
+        :is(ion-icon) {
           font-size: 24px;
         }
         
-        ion-label {
-          h3 {
+        :is(ion-label) {
+          :is(h3) {
             font-weight: 600;
             color: var(--ion-color-dark);
             margin-bottom: 4px;
           }
           
-          p {
+          :is(p) {
             margin: 2px 0;
             font-size: 14px;
             color: var(--ion-color-medium);
             
-            strong {
+            :is(strong) {
               color: var(--ion-color-primary);
             }
           }
@@ -777,7 +777,7 @@ interface ServicoRealizado {
       background: var(--ion-color-light);
       border-radius: 8px;
       
-      ion-icon {
+      :is(ion-icon) {
         font-size: 24px;
         margin-bottom: 8px;
       }
