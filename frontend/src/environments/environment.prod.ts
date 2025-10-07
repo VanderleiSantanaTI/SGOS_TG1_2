@@ -4,7 +4,7 @@ export const environment = {
   // API Configuration
   // apiUrl: 'https://api.sgos.com/api/v1',
   // apiUrl: 'http://localhost:8000/api/v1',
-  apiUrl: 'http://apitg.vsatech.cloud:8000/api/v1',
+  apiUrl: 'https://apitg.vsatech.cloud/api/v1',
   apiTimeout: 30000, // 30 segundos
   
   // App Configuration

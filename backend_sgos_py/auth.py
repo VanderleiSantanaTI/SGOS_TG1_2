@@ -17,10 +17,19 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verifica se a senha está correta usando bcrypt"""
     try:
-        # Truncar senha se for muito longa (bcrypt tem limite de 72 bytes)
-        if len(plain_password) > 72:
-            plain_password = plain_password[:72]
+        # Garantir que é string
+        plain_password = str(plain_password) if plain_password is not None else ""
+        
+        # Limpar espaços extras
+        plain_password = plain_password.strip()
+        
+        # Verificar se não está vazia
+        if not plain_password:
+            return False
+        
+        # Verificar senha diretamente
         return pwd_context.verify(plain_password, hashed_password)
+        
     except Exception as e:
         print(f"⚠️ Erro ao verificar senha: {e}")
         return False
@@ -28,10 +37,19 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 def get_password_hash(password: str) -> str:
     """Gera hash da senha usando bcrypt"""
     try:
-        # Truncar senha se for muito longa (bcrypt tem limite de 72 bytes)
-        if len(password) > 72:
-            password = password[:72]
+        # Garantir que é string
+        password = str(password) if password is not None else ""
+        
+        # Limpar espaços extras
+        password = password.strip()
+        
+        # Verificar se não está vazia
+        if not password:
+            raise ValueError("Senha não pode estar vazia")
+        
+        # Gerar hash diretamente
         return pwd_context.hash(password)
+        
     except Exception as e:
         print(f"⚠️ Erro ao gerar hash da senha: {e}")
         raise e
