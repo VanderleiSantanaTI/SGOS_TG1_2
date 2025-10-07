@@ -4,6 +4,7 @@ import { MenuController } from '@ionic/angular';
 import { HttpClient } from '@angular/common/http';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-dashboard',
@@ -60,9 +61,9 @@ export class DashboardPage implements OnInit, OnDestroy {
       }
 
       const [osResp, veiculosResp, usuariosResp]: any[] = await Promise.all([
-        this.http.get('http://localhost:8000/api/v1/ordens-servico/?limit=1000', options).toPromise(),
-        this.http.get('http://localhost:8000/api/v1/veiculos/?limit=1000', options).toPromise(),
-        this.http.get('http://localhost:8000/api/v1/usuarios/?limit=1000', options).toPromise()
+        this.http.get(environment.apiUrl + '/ordens-servico/?limit=1000', options).toPromise(),
+        this.http.get(environment.apiUrl + '/veiculos/?limit=1000', options).toPromise(),
+        this.http.get(environment.apiUrl + '/usuarios/?limit=1000', options).toPromise()
       ]);
 
       const osItems = osResp?.data?.items || [];

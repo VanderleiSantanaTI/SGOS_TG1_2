@@ -197,7 +197,7 @@ export class OrdensServicoPage implements OnInit, OnDestroy {
       }
       
       const response: any = await this.http.get(
-        'http://localhost:8000/api/v1/ordens-servico/',
+        environment.apiUrl + '/ordens-servico/',
         options
       ).toPromise();
       
@@ -241,7 +241,7 @@ export class OrdensServicoPage implements OnInit, OnDestroy {
       }
       
       const response: any = await this.http.get(
-        'http://localhost:8000/api/v1/veiculos/',
+        environment.apiUrl + '/veiculos/',
         options
       ).toPromise();
       
@@ -380,7 +380,7 @@ export class OrdensServicoPage implements OnInit, OnDestroy {
       };
       
       const response: any = await this.http.post(
-        'http://localhost:8000/api/v1/ordens-servico/',
+        environment.apiUrl + '/ordens-servico/',
         formData,
         options
       ).toPromise();
@@ -632,7 +632,7 @@ export class OrdensServicoPage implements OnInit, OnDestroy {
       }
       
       const response: any = await this.http.get(
-        `http://localhost:8000/api/v1/encerrar-os/?abrir_os_id=${osId}`,
+        `${environment.apiUrl}/encerrar-os/?abrir_os_id=${osId}`,
         options
       ).toPromise();
       

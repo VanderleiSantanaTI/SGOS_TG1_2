@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ToastController } from '@ionic/angular';
 import { HttpClient } from '@angular/common/http';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-login-simple',
@@ -40,7 +41,7 @@ export class LoginPage implements OnInit {
         const credentials = this.loginForm.value;
         
         // Make HTTP call to backend
-        const response: any = await this.http.post('http://localhost:8000/api/v1/auth/login', credentials).toPromise();
+        const response: any = await this.http.post(environment.apiUrl + '/auth/login', credentials).toPromise();
         
         console.log('Login response:', response);
         
