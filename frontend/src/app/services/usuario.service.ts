@@ -16,9 +16,7 @@ import {
 })
 export class UsuarioService {
   private readonly endpoint = '/usuarios/';
-
   constructor(private apiService: ApiService) {}
-
   /**
    * Get all users with pagination
    */
