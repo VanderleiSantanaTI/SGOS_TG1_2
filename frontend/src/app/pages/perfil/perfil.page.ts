@@ -166,7 +166,7 @@ export class PerfilPage implements OnInit {
 
       // Fazer requisição direta para o endpoint de alterar senha
       const token = localStorage.getItem(environment.storage.token);
-      const response: any = await fetch(`${environment.apiUrl}/usuarios/me/password`, {
+      const response: any = await fetch(`${environment.apiUrl}/usuarios/me/password/`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

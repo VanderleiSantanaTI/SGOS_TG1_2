@@ -15,7 +15,7 @@ import {
   providedIn: 'root'
 })
 export class VeiculoService {
-  private readonly endpoint = '/veiculos';
+  private readonly endpoint = '/veiculos/';
 
   constructor(private apiService: ApiService) {}
 
