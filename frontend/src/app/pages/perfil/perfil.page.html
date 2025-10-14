@@ -3,13 +3,235 @@
     <ion-buttons slot="start">
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
-    <ion-title>Perfil</ion-title>
+    <ion-title>Meu Perfil</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
   <div class="container">
-    <h1>Perfil</h1>
-    <p>Esta página será implementada em breve.</p>
+    
+    <!-- Loading State -->
+    <div *ngIf="!currentUser" class="loading-container">
+      <ion-spinner></ion-spinner>
+      <p>Carregando perfil...</p>
+    </div>
+
+    <!-- Profile Content -->
+    <div *ngIf="currentUser" class="profile-content">
+      
+      <!-- Profile Header -->
+      <ion-card class="profile-header">
+        <ion-card-content>
+          <div class="profile-avatar">
+            <ion-avatar>
+              <ion-icon name="person" size="large"></ion-icon>
+            </ion-avatar>
+          </div>
+          <div class="profile-info">
+            <h2>{{ currentUser.nome_completo }}</h2>
+            <p class="username">@{{ currentUser.username }}</p>
+            <ion-chip [color]="getPerfilColor(currentUser.perfil)" class="perfil-chip">
+              {{ getPerfilLabel(currentUser.perfil) }}
+            </ion-chip>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Profile Details -->
+      <ion-card class="profile-details">
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon name="information-circle-outline"></ion-icon>
+            Informações Pessoais
+          </ion-card-title>
+          <ion-buttons slot="end" *ngIf="!isEditing">
+            <ion-button fill="clear" (click)="startEditing()">
+              <ion-icon name="create-outline"></ion-icon>
+              Editar
+            </ion-button>
+          </ion-buttons>
+        </ion-card-header>
+        
+        <ion-card-content>
+          <!-- View Mode -->
+          <div *ngIf="!isEditing" class="view-mode">
+            <div class="detail-item">
+              <ion-icon name="person-outline"></ion-icon>
+              <div class="detail-content">
+                <label>Nome Completo</label>
+                <span>{{ currentUser.nome_completo }}</span>
+              </div>
+            </div>
+            
+            <div class="detail-item">
+              <ion-icon name="at-outline"></ion-icon>
+              <div class="detail-content">
+                <label>Username</label>
+                <span>{{ currentUser.username }}</span>
+              </div>
+            </div>
+            
+            <div class="detail-item">
+              <ion-icon name="mail-outline"></ion-icon>
+              <div class="detail-content">
+                <label>Email</label>
+                <span>{{ currentUser.email }}</span>
+              </div>
+            </div>
+            
+            <div class="detail-item">
+              <ion-icon name="shield-outline"></ion-icon>
+              <div class="detail-content">
+                <label>Perfil</label>
+                <span>{{ getPerfilLabel(currentUser.perfil) }}</span>
+              </div>
+            </div>
+            
+            <div class="detail-item">
+              <ion-icon name="calendar-outline"></ion-icon>
+              <div class="detail-content">
+                <label>Membro desde</label>
+                <span>{{ formatDate(currentUser.created_at) }}</span>
+              </div>
+            </div>
+            
+            <div class="detail-item">
+              <ion-icon name="checkmark-circle-outline" [color]="currentUser.ativo ? 'success' : 'danger'"></ion-icon>
+              <div class="detail-content">
+                <label>Status</label>
+                <span [class]="currentUser.ativo ? 'status-active' : 'status-inactive'">
+                  {{ currentUser.ativo ? 'Ativo' : 'Inativo' }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Edit Mode -->
+          <form *ngIf="isEditing" [formGroup]="profileForm" (ngSubmit)="saveProfile()">
+            <ion-item>
+              <ion-label position="stacked">Nome Completo *</ion-label>
+              <ion-input 
+                formControlName="nome_completo" 
+                type="text"
+                placeholder="Digite seu nome completo">
+              </ion-input>
+            </ion-item>
+            <div *ngIf="profileForm.get('nome_completo')?.invalid && profileForm.get('nome_completo')?.touched" class="error-message">
+              Nome completo é obrigatório (mínimo 2 caracteres)
+            </div>
+
+            <ion-item>
+              <ion-label position="stacked">Username *</ion-label>
+              <ion-input 
+                formControlName="username" 
+                type="text"
+                placeholder="Digite seu username">
+              </ion-input>
+            </ion-item>
+            <div *ngIf="profileForm.get('username')?.invalid && profileForm.get('username')?.touched" class="error-message">
+              Username é obrigatório (mínimo 3 caracteres)
+            </div>
+
+            <ion-item>
+              <ion-label position="stacked">Email *</ion-label>
+              <ion-input 
+                formControlName="email" 
+                type="email"
+                placeholder="Digite seu email">
+              </ion-input>
+            </ion-item>
+            <div *ngIf="profileForm.get('email')?.invalid && profileForm.get('email')?.touched" class="error-message">
+              Email é obrigatório e deve ser válido
+            </div>
+
+            <ion-item>
+              <ion-label position="stacked">Perfil *</ion-label>
+              <ion-select formControlName="perfil" placeholder="Selecione o perfil">
+                <ion-select-option 
+                  *ngFor="let option of perfilOptions" 
+                  [value]="option.value">
+                  {{ option.label }}
+                </ion-select-option>
+              </ion-select>
+            </ion-item>
+            <div *ngIf="profileForm.get('perfil')?.invalid && profileForm.get('perfil')?.touched" class="error-message">
+              Perfil é obrigatório
+            </div>
+
+            <div class="form-actions">
+              <ion-button fill="outline" (click)="cancelEditing()">
+                <ion-icon name="close-outline"></ion-icon>
+                Cancelar
+              </ion-button>
+              <ion-button type="submit" [disabled]="profileForm.invalid">
+                <ion-icon name="checkmark-outline"></ion-icon>
+                Salvar
+              </ion-button>
+            </div>
+          </form>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Change Password -->
+      <ion-card class="password-card">
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon name="lock-closed-outline"></ion-icon>
+            Alterar Senha
+          </ion-card-title>
+        </ion-card-header>
+        
+        <ion-card-content>
+          <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+            <ion-item>
+              <ion-label position="stacked">Senha Atual *</ion-label>
+              <ion-input 
+                formControlName="senha_atual" 
+                type="password"
+                placeholder="Digite sua senha atual">
+              </ion-input>
+            </ion-item>
+            <div *ngIf="passwordForm.get('senha_atual')?.invalid && passwordForm.get('senha_atual')?.touched" class="error-message">
+              Senha atual é obrigatória
+            </div>
+
+            <ion-item>
+              <ion-label position="stacked">Nova Senha *</ion-label>
+              <ion-input 
+                formControlName="nova_senha" 
+                type="password"
+                placeholder="Digite sua nova senha">
+              </ion-input>
+            </ion-item>
+            <div *ngIf="passwordForm.get('nova_senha')?.invalid && passwordForm.get('nova_senha')?.touched" class="error-message">
+              Nova senha é obrigatória (mínimo 6 caracteres)
+            </div>
+
+            <ion-item>
+              <ion-label position="stacked">Confirmar Nova Senha *</ion-label>
+              <ion-input 
+                formControlName="confirmar_senha" 
+                type="password"
+                placeholder="Confirme sua nova senha">
+              </ion-input>
+            </ion-item>
+            <div *ngIf="passwordForm.get('confirmar_senha')?.errors?.['passwordMismatch']" class="error-message">
+              As senhas não coincidem
+            </div>
+            <div *ngIf="passwordForm.get('confirmar_senha')?.invalid && passwordForm.get('confirmar_senha')?.touched && !passwordForm.get('confirmar_senha')?.errors?.['passwordMismatch']" class="error-message">
+              Confirmação de senha é obrigatória
+            </div>
+
+            <div class="form-actions">
+              <ion-button type="submit" [disabled]="passwordForm.invalid" expand="block">
+                <ion-icon name="key-outline"></ion-icon>
+                Alterar Senha
+              </ion-button>
+            </div>
+          </form>
+        </ion-card-content>
+      </ion-card>
+
+    </div>
   </div>
 </ion-content>

@@ -177,6 +177,15 @@ export class AuthService {
   }
 
   /**
+   * Update current user data
+   */
+  updateCurrentUser(userData: Usuario): void {
+    this.currentUserSubject.next(userData);
+    // Update localStorage
+    localStorage.setItem(this.USER_KEY, JSON.stringify(userData));
+  }
+
+  /**
    * Get current token
    */
   getToken(): string | null {
