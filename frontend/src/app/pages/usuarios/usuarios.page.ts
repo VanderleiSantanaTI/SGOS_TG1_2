@@ -1,9 +1,11 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { MenuController, ToastController, AlertController, LoadingController } from '@ionic/angular';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { UsuarioService } from '../../services/usuario.service';
 import { AuthService } from '../../services/auth.service';
 import { Usuario, UsuarioCreate, UsuarioUpdate } from '../../models/usuario.model';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-usuarios',
@@ -39,7 +41,8 @@ export class UsuariosPage implements OnInit {
     private formBuilder: FormBuilder,
     private toastController: ToastController,
     private alertController: AlertController,
-    private loadingController: LoadingController
+    private loadingController: LoadingController,
+    private http: HttpClient
   ) {
     this.usuarioForm = this.createForm();
   }
@@ -65,17 +68,34 @@ export class UsuariosPage implements OnInit {
 
   async loadUsuarios() {
     this.loading = true;
+    
     try {
-      const response = await this.usuarioService.getUsuarios({
-        skip: (this.currentPage - 1) * this.pageSize,
-        limit: this.pageSize,
-        search: this.searchTerm || undefined
-      }).toPromise();
-
-      if (response) {
+      const token = localStorage.getItem('sgos_token');
+      const options: any = {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      };
+      
+      if (token) {
+        options.headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      const response: any = await this.http.get(
+        environment.apiUrl + '/usuarios/',
+        options
+      ).toPromise();
+      
+      console.log('Usuários Response:', response);
+      
+      if (response && (response.status === 'success' || response.success) && response.data) {
         this.usuarios = response.data.items || [];
         this.filteredUsuarios = [...this.usuarios];
         this.totalPages = response.data.pages || 1;
+        console.log('Loaded Usuários:', this.usuarios.length);
+      } else {
+        console.error('Resposta inválida:', response);
+        await this.showErrorToast('Erro ao carregar usuários');
       }
     } catch (error) {
       console.error('Erro ao carregar usuários:', error);
