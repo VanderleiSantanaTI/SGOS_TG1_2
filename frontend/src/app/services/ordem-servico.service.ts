@@ -20,7 +20,7 @@ import {
   providedIn: 'root'
 })
 export class OrdemServicoService {
-  private readonly endpoint = '/ordens-servico/';
+  private readonly endpoint = '/ordens-servico';
 
   constructor(private apiService: ApiService) {}
 
