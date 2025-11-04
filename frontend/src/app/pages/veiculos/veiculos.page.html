@@ -65,8 +65,20 @@
       </div>
     </div>
 
+    <!-- Botão para Cadastrar Novo Veículo -->
+    <div class="create-button-section" *ngIf="!showCreateForm && !showEditForm && isAdmin()">
+      <ion-button 
+        fill="solid" 
+        color="primary" 
+        (click)="showCreateVeiculo()"
+        size="default">
+        <ion-icon name="add-outline" slot="start"></ion-icon>
+        Novo Veículo
+      </ion-button>
+    </div>
+
     <!-- CREATE/EDIT FORM -->
-    <div class="form-section" *ngIf="showCreateForm || showEditForm">
+    <div class="form-section" *ngIf="(showCreateForm && isAdmin()) || showEditForm">
       <div class="form-header">
         <h1>{{ showCreateForm ? 'Cadastrar Novo Veículo' : 'Editar Veículo' }}</h1>
         <p>{{ showCreateForm ? 'Preencha os dados para cadastrar um novo veículo' : 'Atualize as informações do veículo' }}</p>
@@ -112,8 +124,9 @@
                   <ion-label position="stacked">Placa *</ion-label>
                   <ion-input 
                     formControlName="placa"
-                    placeholder="Ex: ABC-1234"
+                    placeholder="Ex: ABC-1234 ou ABC-1A23"
                     maxlength="8"
+                    (ionInput)="aplicarMascaraPlaca($event)"
                     required>
                   </ion-input>
                 </ion-item>
@@ -134,7 +147,7 @@
             <div class="form-row">
               <div class="form-group">
                 <ion-item fill="outline">
-                  <ion-label position="stacked">Subunidade/Cia *</ion-label>
+                  <ion-label position="stacked">Subunidade *</ion-label>
                   <ion-select 
                     formControlName="su_cia_viatura"
                     placeholder="Selecione a subunidade"
@@ -229,12 +242,17 @@
                   <ion-label position="stacked">Status *</ion-label>
                   <ion-select 
                     formControlName="status"
-                    interface="popover">
+                    interface="popover"
+                    [disabled]="showEditForm && isVeiculoEmManutencao()">
                     <ion-select-option value="ATIVO">Ativo</ion-select-option>
-                    <ion-select-option value="MANUTENCAO">Manutenção</ion-select-option>
+                    <!-- <ion-select-option value="MANUTENCAO">Manutenção</ion-select-option> -->
                     <ion-select-option value="INATIVO">Inativo</ion-select-option>
                   </ion-select>
                 </ion-item>
+                <ion-note *ngIf="showEditForm && isVeiculoEmManutencao()" color="warning" style="padding: 8px 16px; display: block;">
+                  <ion-icon name="information-circle-outline"></ion-icon>
+                  Não é possível alterar o status de um veículo em manutenção.
+                </ion-note>
               </div>
             </div>
 
@@ -254,7 +272,7 @@
               <ion-button 
                 expand="block" 
                 (click)="showCreateForm ? saveVeiculo() : updateVeiculo()"
-                [disabled]="veiculoForm.invalid"
+                [disabled]="veiculoForm.invalid || (showCreateForm && !isAdmin())"
                 color="primary">
                 <ion-icon name="checkmark-outline" slot="start"></ion-icon>
                 {{ showCreateForm ? 'Cadastrar Veículo' : 'Atualizar Veículo' }}

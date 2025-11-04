@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { MenuController, LoadingController, ToastController, AlertController, ModalController } from '@ionic/angular';
+import { MenuController, LoadingController, ToastController, AlertController, ModalController, ViewWillEnter } from '@ionic/angular';
 import { HttpClient } from '@angular/common/http';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -30,7 +30,7 @@ interface Veiculo {
   templateUrl: './veiculos.page.html',
   styleUrls: ['./veiculos.page.scss'],
 })
-export class VeiculosPage implements OnInit, OnDestroy {
+export class VeiculosPage implements OnInit, OnDestroy, ViewWillEnter {
   private destroy$ = new Subject<void>();
   
   // Configurações do environment
@@ -39,6 +39,7 @@ export class VeiculosPage implements OnInit, OnDestroy {
   veiculos: Veiculo[] = [];
   filteredVeiculos: Veiculo[] = [];
   currentUser: any = null;
+  isUserAdmin: boolean = false;
   loading = false;
   searchTerm = '';
   selectedStatus = '';
@@ -58,7 +59,7 @@ export class VeiculosPage implements OnInit, OnDestroy {
   statusOptions = [
     { value: '', label: 'Todos' },
     { value: 'ATIVO', label: 'Ativo' },
-    { value: 'MANUTENCAO', label: 'Manutenção' },
+    // { value: 'MANUTENCAO', label: 'Manutenção' },
     { value: 'INATIVO', label: 'Inativo' }
   ];
 
@@ -73,16 +74,11 @@ export class VeiculosPage implements OnInit, OnDestroy {
   ];
 
   ciaOptions = [
-    '1ª Cia',
-    '2ª Cia',
-    '3ª Cia',
-    '4ª Cia',
-    '5ª Cia',
-    '6ª Cia',
-    '7ª Cia',
-    '8ª Cia',
-    '9ª Cia',
-    '10ª Cia'
+    '1ª SU',
+    '2ª SU',
+    '3ª SU',
+    '4ª SU',
+    '5ª SU'
   ];
 
   constructor(
@@ -105,7 +101,7 @@ export class VeiculosPage implements OnInit, OnDestroy {
     this.veiculoForm = this.formBuilder.group({
       marca: ['', [Validators.required, Validators.minLength(2)]],
       modelo: ['', [Validators.required, Validators.minLength(2)]],
-      placa: ['', [Validators.required, Validators.pattern(/^[A-Z]{3}-[0-9]{4}$/)]],
+      placa: ['', [Validators.required, Validators.pattern(/^[A-Z]{3}-([0-9]{4}|[0-9][A-Z][0-9]{2})$/)]],
       su_cia_viatura: ['', Validators.required],
       patrimonio: ['', [Validators.required, Validators.minLength(3)]],
       ano_fabricacao: ['', [Validators.required, Validators.pattern(/^[0-9]{4}$/)]],
@@ -119,13 +115,36 @@ export class VeiculosPage implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    // Get user from localStorage
-    const userStr = localStorage.getItem('sgos_user');
-    if (userStr) {
-      this.currentUser = JSON.parse(userStr);
-    }
-    
+    this.loadCurrentUser();
     this.loadVeiculos();
+  }
+
+  /**
+   * Load current user from localStorage and update isUserAdmin
+   */
+  loadCurrentUser() {
+    // Get user from localStorage
+    const userStr = localStorage.getItem('sgos_user') || localStorage.getItem(environment.storage?.user);
+    if (userStr) {
+      try {
+        this.currentUser = JSON.parse(userStr);
+        // Verificar perfil (case-insensitive para garantir)
+        const perfil = this.currentUser?.perfil?.toUpperCase()?.trim();
+        this.isUserAdmin = perfil === 'ADMIN';
+      } catch (error) {
+        console.error('Error parsing user from localStorage:', error);
+        this.currentUser = null;
+        this.isUserAdmin = false;
+      }
+    } else {
+      this.currentUser = null;
+      this.isUserAdmin = false;
+    }
+  }
+
+  ionViewWillEnter() {
+    // Recarregar usuário sempre que a página for acessada
+    this.loadCurrentUser();
   }
 
   ngOnDestroy() {
@@ -148,16 +167,13 @@ export class VeiculosPage implements OnInit, OnDestroy {
       }
       
       const response: any = await this.http.get(
-        `${environment.apiUrl}${environment.endpoints.veiculos}/`, 
+        `${environment.apiUrl}${environment.endpoints.veiculos}/`,
         options
       ).toPromise();
-      
-      console.log('Vehicles Response:', response);
       
       if (response && (response.status === 'success' || response.success) && response.data) {
         this.veiculos = response.data.items || [];
         this.totalItems = response.data.pagination?.total || this.veiculos.length;
-        console.log('Loaded vehicles:', this.veiculos.length);
         this.applyFilters();
       } else {
         console.log('No vehicles data:', response);
@@ -215,9 +231,10 @@ export class VeiculosPage implements OnInit, OnDestroy {
 
   /**
    * Check if user is admin
+   * Usa a propriedade isUserAdmin para evitar múltiplas chamadas durante change detection
    */
   isAdmin(): boolean {
-    return this.currentUser?.perfil === 'ADMIN';
+    return this.isUserAdmin;
   }
 
   /**
@@ -228,11 +245,19 @@ export class VeiculosPage implements OnInit, OnDestroy {
   }
 
   /**
+   * Verifica se o veículo está em manutenção
+   */
+  isVeiculoEmManutencao(): boolean {
+    return this.editingVeiculo?.status?.toUpperCase() === 'MANUTENCAO';
+  }
+
+  /**
    * Show create vehicle form
    */
   showCreateVeiculo() {
-    if (!this.isAdmin()) {
+    if (!this.isUserAdmin) {
       this.showErrorToast('Apenas administradores podem cadastrar veículos');
+      this.showCreateForm = false;
       return;
     }
     this.showCreateForm = true;
@@ -309,7 +334,7 @@ export class VeiculosPage implements OnInit, OnDestroy {
    * Delete vehicle
    */
   async deleteVeiculo(veiculo: Veiculo) {
-    if (!this.isAdmin()) {
+    if (!this.isUserAdmin) {
       await this.showErrorToast('Apenas administradores podem deletar veículos');
       return;
     }
@@ -377,6 +402,12 @@ export class VeiculosPage implements OnInit, OnDestroy {
    * Save new vehicle
    */
   async saveVeiculo() {
+    // Verificar se o usuário é admin antes de salvar
+    if (!this.isUserAdmin) {
+      await this.showErrorToast('Apenas administradores podem cadastrar veículos');
+      return;
+    }
+
     if (this.veiculoForm.invalid) {
       await this.showErrorToast('Por favor, preencha todos os campos obrigatórios');
       return;
@@ -459,6 +490,15 @@ export class VeiculosPage implements OnInit, OnDestroy {
     if (this.veiculoForm.invalid || !this.editingVeiculo) {
       await this.showErrorToast('Por favor, preencha todos os campos obrigatórios');
       return;
+    }
+
+    // Verificar se o veículo está em manutenção e tentar alterar o status
+    if (this.isVeiculoEmManutencao()) {
+      const novoStatus = this.veiculoForm.get('status')?.value;
+      if (novoStatus !== 'MANUTENCAO') {
+        await this.showErrorToast('Não é possível alterar o status de um veículo em manutenção.');
+        return;
+      }
     }
 
     const loading = await this.loadingController.create({
@@ -554,13 +594,52 @@ export class VeiculosPage implements OnInit, OnDestroy {
     switch (status) {
       case 'ATIVO':
         return 'Ativo';
-      case 'MANUTENCAO':
-        return 'Manutenção';
+      // case 'MANUTENCAO':
+      //   return 'Manutenção';
       case 'INATIVO':
         return 'Inativo';
       default:
         return status;
     }
+  }
+
+  /**
+   * Aplicar máscara de placa (AAA-9999 ou AAA-9A99)
+   */
+  aplicarMascaraPlaca(event: any) {
+    let value = event.target.value.toUpperCase();
+    
+    // Remover todos os caracteres não alfanuméricos
+    let cleanValue = value.replace(/[^A-Z0-9]/g, '');
+    
+    // Limitar a 7 caracteres (sem o traço)
+    if (cleanValue.length > 7) {
+      cleanValue = cleanValue.substring(0, 7);
+    }
+    
+    // Aplicar máscara: 3 letras + traço + resto
+    if (cleanValue.length > 3) {
+      value = cleanValue.substring(0, 3) + '-' + cleanValue.substring(3);
+    } else {
+      value = cleanValue;
+    }
+    
+    // Atualizar o valor no formulário sem disparar eventos
+    this.veiculoForm.patchValue({ placa: value }, { emitEvent: false, onlySelf: true });
+    
+    // Atualizar o valor do input para manter o cursor na posição correta
+    const input = event.target;
+    const cursorPosition = input.selectionStart || 0;
+    input.value = value;
+    
+    // Ajustar posição do cursor
+    setTimeout(() => {
+      let newPosition = cursorPosition;
+      if (value.length > cursorPosition && value.charAt(cursorPosition) === '-') {
+        newPosition = cursorPosition + 1;
+      }
+      input.setSelectionRange(newPosition, newPosition);
+    }, 0);
   }
 
   /**

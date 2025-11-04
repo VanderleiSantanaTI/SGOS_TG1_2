@@ -225,7 +225,7 @@ export class OrdensServicoPage implements OnInit, OnDestroy {
   }
 
   /**
-   * Load vehicles for selection
+   * Load vehicles for selection (apenas veículos ATIVOS - não em manutenção)
    */
   async loadVeiculos() {
     try {
@@ -240,22 +240,26 @@ export class OrdensServicoPage implements OnInit, OnDestroy {
         options.headers['Authorization'] = `Bearer ${token}`;
       }
       
+      // Filtrar apenas veículos ATIVOS (não em manutenção)
       const response: any = await this.http.get(
-        environment.apiUrl + '/veiculos/',
+        environment.apiUrl + '/veiculos/?status=ATIVO',
         options
       ).toPromise();
       
       console.log('Vehicles Response:', response);
       
       if (response && (response.status === 'success' || response.success) && response.data) {
-        this.veiculos = response.data.items || [];
-        console.log('Loaded vehicles:', this.veiculos.length);
+        const allVeiculos = response.data.items || [];
+        // Filtrar novamente no frontend para garantir que apenas ATIVOS sejam exibidos
+        this.veiculos = allVeiculos.filter((v: Veiculo) => v.status === 'ATIVO');
+        console.log('Loaded active vehicles:', this.veiculos.length);
       } else {
         console.log('No vehicles data:', response);
         this.veiculos = [];
       }
     } catch (error: any) {
       console.error('Error loading vehicles:', error);
+      this.veiculos = [];
     }
   }
 
@@ -304,9 +308,12 @@ export class OrdensServicoPage implements OnInit, OnDestroy {
   /**
    * Show create OS form
    */
-  showCreateOS() {
+  async showCreateOS() {
+    // Recarregar veículos disponíveis antes de mostrar o formulário
+    await this.loadVeiculos();
+    
     if (this.veiculos.length === 0) {
-      this.showErrorToast('Nenhum veículo disponível. Cadastre veículos primeiro.');
+      this.showErrorToast('Nenhum veículo disponível. Apenas veículos ATIVOS (não em manutenção) podem ter novas OS.');
       return;
     }
     

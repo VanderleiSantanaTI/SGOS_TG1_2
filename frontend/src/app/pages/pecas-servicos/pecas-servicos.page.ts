@@ -138,21 +138,42 @@ export class PecasServicosPage implements OnInit {
         options.headers = { 'Authorization': `Bearer ${token}` };
       }
 
-      const response: any = await this.http.get(
-        `${environment.apiUrl}${environment.endpoints.ordensServico}/`,
-        options
-      ).toPromise();
+      // Adicionar parâmetro situacao=ABERTA para filtrar diretamente na API
+      const url = `${environment.apiUrl}${environment.endpoints.ordensServico}/?situacao=ABERTA`;
+      
+      const response: any = await this.http.get(url, options).toPromise();
 
-      if (response.status === 'success' || response.success) {
+      console.log('Resposta da API de ordens:', response);
+
+      if (response && (response.status === 'success' || response.success || response.data)) {
         // A API retorna response.data.items para listas paginadas
-        const ordens = response.data?.items || response.data || [];
-        this.ordensAbertas = ordens.filter((os: OrdemServico) => 
-          os.situacao_os === 'ABERTA'
-        );
+        let ordens = [];
+        
+        if (response.data?.items) {
+          ordens = response.data.items;
+        } else if (response.data && Array.isArray(response.data)) {
+          ordens = response.data;
+        } else if (Array.isArray(response)) {
+          ordens = response;
+        } else if (response.items) {
+          ordens = response.items;
+        }
+
+        // Filtrar novamente no frontend para garantir (case-insensitive)
+        this.ordensAbertas = ordens.filter((os: OrdemServico) => {
+          const situacao = os.situacao_os?.toUpperCase().trim();
+          return situacao === 'ABERTA';
+        });
+
+        console.log('Ordens abertas encontradas:', this.ordensAbertas.length);
+      } else {
+        console.warn('Resposta da API não está no formato esperado:', response);
+        this.ordensAbertas = [];
       }
     } catch (error) {
       console.error('Erro ao carregar ordens de serviço:', error);
       await this.showErrorToast('Erro ao carregar ordens de serviço');
+      this.ordensAbertas = [];
     } finally {
       this.loading = false;
     }

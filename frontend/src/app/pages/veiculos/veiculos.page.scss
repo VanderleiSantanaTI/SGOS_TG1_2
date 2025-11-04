@@ -406,6 +406,31 @@ ion-fab {
   }
 }
 
+// Create Button Section (lado direito)
+.create-button-section {
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 8px;
+
+  @media (min-width: 768px) {
+    padding: 0;
+    margin-bottom: 20px;
+  }
+
+  ion-button {
+    --padding-start: 16px;
+    --padding-end: 16px;
+    margin: 0;
+    
+    @media (max-width: 767px) {
+      --padding-start: 12px;
+      --padding-end: 12px;
+      font-size: 14px;
+    }
+  }
+}
+
 // Form Section
 .form-section {
   margin-bottom: 24px;

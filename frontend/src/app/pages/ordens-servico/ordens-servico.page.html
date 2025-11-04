@@ -60,21 +60,24 @@
               </ion-item>
             </div>
 
-            <!-- Veículo -->
+            <!-- Veculo -->
             <div class="form-group">
               <ion-item fill="outline">
-                <ion-label position="stacked">Veículo *</ion-label>
+                <ion-label position="stacked">Veculo *</ion-label>
                 <ion-select 
                   [(ngModel)]="createFormData.veiculo_id"
-                  placeholder="Selecione o veículo"
+                  placeholder="Selecione o veculo"
                   interface="popover">
                   <ion-select-option 
-                    *ngFor="let veiculo of veiculos" 
+                    *ngFor="let veiculo of veiculos; trackBy: trackByVeiculoId" 
                     [value]="veiculo.id">
                     {{veiculo.marca}} {{veiculo.modelo}} - {{veiculo.placa}}
                   </ion-select-option>
                 </ion-select>
               </ion-item>
+              <ion-note *ngIf="veiculos.length === 0" color="warning" style="padding: 8px 16px; display: block;">
+                Nenhum veículo disponível. Apenas veículos ATIVOS (não em manutenção) aparecem aqui.
+              </ion-note>
             </div>
 
             <!-- Hodômetro -->
