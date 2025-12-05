@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from database import get_db
-from models import Usuario
+from models import Usuario, OrdemServico, ServicoRealizado, PecaUtilizada, EncerrarOS, RetiradaViatura, PasswordResetToken
 from schemas import Usuario as UsuarioSchema, UsuarioCreate, UsuarioUpdate, MessageResponse, PaginatedResponse
 from auth import get_current_active_user, check_admin_permission, get_password_hash
 from utils.response_utils import (
@@ -235,12 +235,49 @@ async def deletar_usuario(
         if not usuario:
             return create_not_found_response("Usuário")
         
+        # Verificar se há registros relacionados que impedem a deleção
+        # Contar registros relacionados
+        ordens_count = db.query(OrdemServico).filter(OrdemServico.usuario_id == usuario_id).count()
+        servicos_count = db.query(ServicoRealizado).filter(ServicoRealizado.usuario_id == usuario_id).count()
+        pecas_count = db.query(PecaUtilizada).filter(PecaUtilizada.usuario_id == usuario_id).count()
+        encerramentos_count = db.query(EncerrarOS).filter(EncerrarOS.usuario_id == usuario_id).count()
+        retiradas_count = db.query(RetiradaViatura).filter(RetiradaViatura.usuario_id == usuario_id).count()
+        tokens_count = db.query(PasswordResetToken).filter(PasswordResetToken.usuario_id == usuario_id).count()
+        
+        total_relacionados = ordens_count + servicos_count + pecas_count + encerramentos_count + retiradas_count + tokens_count
+        
+        if total_relacionados > 0:
+            # Construir mensagem detalhada
+            detalhes = []
+            if ordens_count > 0:
+                detalhes.append(f"{ordens_count} ordem(ns) de serviço")
+            if servicos_count > 0:
+                detalhes.append(f"{servicos_count} serviço(s) realizado(s)")
+            if pecas_count > 0:
+                detalhes.append(f"{pecas_count} peça(s) utilizada(s)")
+            if encerramentos_count > 0:
+                detalhes.append(f"{encerramentos_count} encerramento(s) de OS")
+            if retiradas_count > 0:
+                detalhes.append(f"{retiradas_count} retirada(s) de viatura")
+            if tokens_count > 0:
+                detalhes.append(f"{tokens_count} token(s) de recuperação")
+            
+            mensagem = f"Não é possível deletar o usuário pois existem registros relacionados: {', '.join(detalhes)}. "
+            mensagem += "Recomenda-se desativar o usuário ao invés de deletá-lo."
+            
+            return create_validation_error_response(
+                [mensagem],
+                "Não é possível deletar usuário com registros relacionados"
+            )
+        
+        # Se não houver registros relacionados, pode deletar
         db.delete(usuario)
         db.commit()
         
         return create_delete_response("Usuário deletado com sucesso")
         
     except Exception as e:
+        db.rollback()
         return create_error_response(f"Erro ao deletar usuário: {str(e)}")
 
 @router.get("/me/profile")
